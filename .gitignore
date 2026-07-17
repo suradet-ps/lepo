@@ -1,6 +1,30 @@
-/target/
+# Rust / Cargo
+target/
 dist/
-**/*.rs.bk
-Cargo.lock.orig
-.DS_Store
+*.pdb
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
 *.log
+
+# Editor / OS
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+
+# Leptos/Trunk
+/trunk/
