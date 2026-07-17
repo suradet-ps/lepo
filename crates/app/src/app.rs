@@ -22,10 +22,9 @@ pub fn App() -> impl IntoView {
 
   let auth = expect_context::<AuthState>();
   let settings = expect_context::<SettingsState>();
-  let theme = Signal::derive(move || settings.theme.get().as_attr());
 
   view! {
-      <div class="app-shell" attr:data-theme=move || theme.get()>
+      <div class="app-shell" attr:data-theme=move || settings.theme.get().as_attr()>
           <Router>
               {move || {
                   let location = use_location();
