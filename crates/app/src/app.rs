@@ -9,7 +9,7 @@ use leptos_router::{
 
 use crate::components::rate_limit_badge::RateLimitBadge;
 use crate::pages::{DashboardPage, LoginPage, RepoDetailPage, SettingsPage};
-use crate::state::{AuthState, RateLimitState, SettingsState, WatchlistState};
+use crate::state::{AuthState, RateLimitState, SettingsState, Theme, WatchlistState};
 
 /// The root component. Provides global state via context and renders the router.
 #[component]
@@ -50,6 +50,26 @@ pub fn App() -> impl IntoView {
                                   </a>
                               </nav>
                               <div class="primary-nav-rate">
+                                  <button
+                                      class="theme-toggle"
+                                      title="Toggle light / dark theme"
+                                      on:click=move |_| {
+                                          let next = match settings.theme.get() {
+                                              Theme::Light => Theme::Dark,
+                                              Theme::Dark => Theme::Light,
+                                          };
+                                          settings.theme.set(next);
+                                          let _ = settings.save_theme();
+                                      }
+                                  >
+                                      {move || {
+                                          if settings.theme.get() == Theme::Light {
+                                              "☀"
+                                          } else {
+                                              "☾"
+                                          }
+                                      }}
+                                  </button>
                                   <RateLimitBadge/>
                               </div>
                           </div>

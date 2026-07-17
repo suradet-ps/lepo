@@ -3,7 +3,7 @@
 use leptos::prelude::*;
 
 use crate::state::{
-  AuthState, RateLimitState, RefreshInterval, RepoRef, SettingsState, Theme, WatchlistState,
+  AuthState, RateLimitState, RefreshInterval, RepoRef, SettingsState, WatchlistState,
 };
 
 /// The settings page.
@@ -36,18 +36,6 @@ pub fn SettingsPage() -> impl IntoView {
     };
     settings.refresh_interval.set(interval);
     let _ = settings.save_refresh_interval();
-  };
-
-  // Theme selector.
-  let on_theme_change = move |ev| {
-    let v = event_target_value(&ev);
-    let theme = if v == "dark" {
-      Theme::Dark
-    } else {
-      Theme::Light
-    };
-    settings.theme.set(theme);
-    let _ = settings.save_theme();
   };
 
   let remove_repo = Action::new_local(move |r: &RepoRef| {
@@ -115,17 +103,6 @@ pub fn SettingsPage() -> impl IntoView {
                           <option value="1">"Every 1 minute"</option>
                           <option value="5">"Every 5 minutes"</option>
                           <option value="15">"Every 15 minutes"</option>
-                      </select>
-                  </div>
-              </section>
-
-              <section class="settings-section">
-                  <h2 class="heading-md">"Theme"</h2>
-                  <div class="field">
-                      <span class="field-label">"Appearance"</span>
-                      <select class="text-input" on:change=on_theme_change>
-                          <option value="light">"Light"</option>
-                          <option value="dark">"Dark"</option>
                       </select>
                   </div>
               </section>

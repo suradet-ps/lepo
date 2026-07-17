@@ -611,6 +611,26 @@ a {
   display: inline-flex;
   align-items: center;
 }
+/* Theme toggle in the navbar. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--rounded-full);
+  border: 1px solid var(--colors-hairline);
+  background: var(--colors-surface-card);
+  color: var(--colors-ink);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.theme-toggle:hover {
+  border-color: var(--colors-primary);
+  color: var(--colors-primary);
+}
 /* Compact, muted meter: a status dot + remaining count, no loud fill. */
 .rl-meter {
   display: inline-flex;
