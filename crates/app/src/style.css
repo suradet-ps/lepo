@@ -736,9 +736,14 @@ a {
   gap: 2px;
 }
 .summary-value {
+  display: block;
   font: 700 24px/1 var(--font-sans);
   color: var(--colors-ink);
   letter-spacing: -0.6px;
+}
+.summary-value.skeleton {
+  height: 24px;
+  border-radius: var(--rounded-sm);
 }
 .summary-label {
   font: var(--typography-caption-md);
@@ -894,7 +899,9 @@ a {
   gap: var(--spacing-sm);
 }
 .skeleton-line {
+  display: block;
   height: 14px;
+  width: 100%;
 }
 .skeleton-line--lg {
   height: 28px;
@@ -903,6 +910,16 @@ a {
 .skeleton-line--sm {
   height: 10px;
   width: 40%;
+}
+/* Skeleton bars inside table cells should fill a sensible width. */
+.repo-table .skeleton-line {
+  width: 80%;
+}
+.repo-table td .skeleton-line--sm {
+  width: 60%;
+}
+.summary-strip .skeleton-line--sm {
+  width: 70%;
 }
 .skeleton-block {
   height: 40px;

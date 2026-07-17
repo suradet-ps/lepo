@@ -169,15 +169,73 @@ pub fn DashboardPage() -> impl IntoView {
           }}
 
           <Transition
-              fallback=move || view! {
-                  <div class="repo-grid">
-                      {(0..6).map(|_| view! {
-                          <div class="skeleton-card">
-                              <div class="skeleton skeleton-line skeleton-line--lg"></div>
-                              <div class="skeleton skeleton-line skeleton-line--sm"></div>
+              fallback=move || {
+                  let is_table = view_mode.get() == ViewMode::Table;
+                  view! {
+                      <div class="summary-strip">
+                          <div class="summary-item">
+                              <span class="summary-value skeleton skeleton-line skeleton-line--sm"></span>
+                              <span class="summary-label">"Repos"</span>
                           </div>
-                      }).collect_view()}
-                  </div>
+                          <div class="summary-item">
+                              <span class="summary-value skeleton skeleton-line skeleton-line--sm"></span>
+                              <span class="summary-label">"Open issues"</span>
+                          </div>
+                          <div class="summary-item">
+                              <span class="summary-value skeleton skeleton-line skeleton-line--sm"></span>
+                              <span class="summary-label">"Open PRs"</span>
+                          </div>
+                          <div class="summary-item">
+                              <span class="summary-value skeleton skeleton-line skeleton-line--sm"></span>
+                              <span class="summary-label">"Freshness"</span>
+                          </div>
+                      </div>
+                      {if is_table {
+                          view! {
+                              <div class="repo-table-wrap">
+                                  <table class="repo-table">
+                                      <thead>
+                                          <tr>
+                                              <th>"Repository"</th>
+                                              <th class="num">"Open Issues"</th>
+                                              <th class="num">"Open PRs"</th>
+                                              <th class="num">"CI"</th>
+                                              <th class="num">"Stars"</th>
+                                              <th>"Last push"</th>
+                                              <th></th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          {(0..8).map(|_| view! {
+                                              <tr>
+                                                  <td><span class="skeleton skeleton-line"></span></td>
+                                                  <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                                  <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                                  <td><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                                  <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                                  <td><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                                  <td class="num"></td>
+                                              </tr>
+                                          }).collect_view()}
+                                      </tbody>
+                                  </table>
+                              </div>
+                          }
+                          .into_any()
+                      } else {
+                          view! {
+                              <div class="repo-grid">
+                                  {(0..6).map(|_| view! {
+                                      <div class="skeleton-card">
+                                          <div class="skeleton skeleton-line skeleton-line--lg"></div>
+                                          <div class="skeleton skeleton-line skeleton-line--sm"></div>
+                                      </div>
+                                  }).collect_view()}
+                              </div>
+                          }
+                          .into_any()
+                      }}
+                  }
               }
           >
               {move || {
