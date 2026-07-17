@@ -23,8 +23,21 @@ pub fn App() -> impl IntoView {
   let auth = expect_context::<AuthState>();
   let settings = expect_context::<SettingsState>();
 
+  // Reflect the theme onto the document root so `:root[data-theme]` CSS applies.
+  let theme_attr = move || settings.theme.get().as_attr();
+  leptos::prelude::create_effect(move |_| {
+    let value = theme_attr();
+    if let Some(win) = web_sys::window() {
+      if let Some(doc) = win.document() {
+        if let Some(root) = doc.document_element() {
+          let _ = root.set_attribute("data-theme", value);
+        }
+      }
+    }
+  });
+
   view! {
-      <div class="app-shell" attr:data-theme=move || settings.theme.get().as_attr()>
+      <div class="app-shell" data-theme=move || settings.theme.get().as_attr()>
           <Router>
               {move || {
                   let location = use_location();
