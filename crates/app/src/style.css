@@ -611,27 +611,43 @@ a {
   display: inline-flex;
   align-items: center;
 }
-.rl-badge {
-  border-radius: var(--rounded-full);
-  padding: 4px 10px;
-  font: var(--typography-button-sm);
-  white-space: nowrap;
-}
-.rl-badge-green {
-  background: var(--colors-success-pale);
-  color: var(--colors-success-deep);
-}
-.rl-badge-yellow {
-  background: var(--colors-secondary-bg);
-  color: var(--colors-charcoal);
-}
-.rl-badge-red {
-  background: var(--colors-error);
-  color: var(--colors-on-dark);
-}
-.rl-badge-unknown {
-  background: var(--colors-surface-card);
+/* Compact, muted meter: a status dot + remaining count, no loud fill. */
+.rl-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font: var(--typography-caption-md);
   color: var(--colors-mute);
+  white-space: nowrap;
+  cursor: default;
+}
+.rl-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--rounded-full);
+  flex: 0 0 auto;
+  background: var(--colors-ash);
+}
+.rl-text {
+  font-variant-numeric: tabular-nums;
+}
+.rl-meter-green .rl-dot {
+  background: #1a7f37;
+}
+.rl-meter-amber .rl-dot {
+  background: #bf8700;
+}
+.rl-meter-red .rl-dot {
+  background: var(--colors-error);
+}
+.rl-meter-red .rl-text {
+  color: var(--colors-error);
+}
+:root[data-theme="dark"] .rl-meter-green .rl-dot {
+  background: #3fb950;
+}
+:root[data-theme="dark"] .rl-meter-amber .rl-dot {
+  background: #d29922;
 }
 
 /* ---------- Settings ---------- */
