@@ -434,6 +434,10 @@ a {
   background: var(--colors-secondary-bg);
   color: var(--colors-ink);
 }
+/* In the table the external-link button sits in a right-aligned actions cell. */
+.repo-table td.actions .repo-card-ext {
+  margin-left: auto;
+}
 .repo-card-stats {
   display: flex;
   gap: var(--spacing-md);
@@ -799,6 +803,25 @@ a {
 .repo-table td.num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+/* CI status column is centered (short badge, not numeric). */
+.repo-table thead th.ci-col,
+.repo-table td.ci-col {
+  text-align: center;
+}
+.repo-table td.ci-col .ci-badge {
+  justify-content: center;
+  width: 100%;
+}
+/* Last-push timestamp is centered for readability. */
+.repo-table thead th.center,
+.repo-table td.center {
+  text-align: center;
+}
+/* Trailing actions column (external link) sits to the far right. */
+.repo-table thead th.actions,
+.repo-table td.actions {
+  text-align: right;
 }
 .repo-table tbody tr {
   border-bottom: 1px solid var(--colors-hairline-soft);

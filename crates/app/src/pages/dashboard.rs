@@ -353,10 +353,10 @@ fn repo_table(
                       {make_header()(SortKey::Name, "Repository", false)}
                       {make_header()(SortKey::Issues, "Open Issues", true)}
                       {make_header()(SortKey::Prs, "Open PRs", true)}
-                      <th class="num">"CI"</th>
+                      <th class="ci-col">"CI"</th>
                       {make_header()(SortKey::Stars, "Stars", true)}
-                      <th>"Last push"</th>
-                      <th></th>
+                      <th class="center">"Last push"</th>
+                      <th class="actions"></th>
                   </tr>
               </thead>
               <tbody>
@@ -385,15 +385,15 @@ fn repo_table(
                                   </td>
                                   <td class="num metric-strong">{open_issues}</td>
                                   <td class="num metric-pr">{open_prs}</td>
-                                  <td>
+                                  <td class="ci-col">
                                       <span class="ci-badge">
                                           <span class=format!("ci-dot {}", ci_dot)></span>
                                           <span>{ci_label}</span>
                                       </span>
                                   </td>
                                   <td class="num">{stars}</td>
-                                  <td>{last_push}</td>
-                                  <td class="num">
+                                  <td class="center">{last_push}</td>
+                                  <td class="actions">
                                       <a
                                           class="repo-card-ext"
                                           href=ext
