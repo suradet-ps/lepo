@@ -43,7 +43,7 @@ impl RepoCardData {
 
 /// Formats a timestamp as a short relative label (e.g. "3d ago").
 fn format_relative(ts: &chrono::DateTime<chrono::Utc>) -> String {
-  let now = chrono::Utc::now();
+  let now = crate::time::now();
   let diff = now.signed_duration_since(*ts);
   if diff.num_minutes() < 1 {
     "just now".to_string()

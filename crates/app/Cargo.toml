@@ -25,6 +25,7 @@ tracing.workspace = true
 tracing-wasm.workspace = true
 console_error_panic_hook.workspace = true
 web-sys.workspace = true
+js-sys.workspace = true
 chrono.workspace = true
 thiserror.workspace = true
 serde.workspace = true

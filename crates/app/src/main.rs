@@ -6,6 +6,7 @@ mod error;
 mod pages;
 mod state;
 mod storage;
+mod time;
 
 use app::App;
 

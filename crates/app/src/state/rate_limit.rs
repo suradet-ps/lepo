@@ -30,7 +30,7 @@ impl RateLimitState {
       self.limit.set(Some(rl));
       self
         .last_updated
-        .set(Some(chrono::Utc::now().format("%H:%M").to_string()));
+        .set(Some(crate::time::now().format("%H:%M").to_string()));
     }
   }
 
