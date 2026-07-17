@@ -460,6 +460,9 @@ a {
   color: var(--colors-primary);
   font: var(--typography-body-strong);
 }
+.repo-card-ci {
+  margin-top: var(--spacing-sm);
+}
 
 /* ---------- Detail page rows ---------- */
 .page-toolbar {

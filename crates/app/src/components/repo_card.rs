@@ -2,7 +2,7 @@
 
 use leptos::prelude::*;
 
-use models::{Issue, PullRequest, Repo};
+use models::{Issue, PullRequest, Repo, WorkflowConclusion, WorkflowRun, WorkflowStatus};
 
 use crate::state::RepoRef;
 
@@ -17,6 +17,8 @@ pub struct RepoCardData {
   pub issues: Vec<Issue>,
   /// Pull requests.
   pub pulls: Vec<PullRequest>,
+  /// Latest CI status (most recent workflow run), if any.
+  pub ci: Option<WorkflowRun>,
 }
 
 impl RepoCardData {
@@ -38,6 +40,29 @@ impl RepoCardData {
       .and_then(|r| r.pushed_at.as_ref())
       .map(format_relative)
       .unwrap_or_else(|| "—".to_string())
+  }
+
+  /// CI status as a (dot-class, label) pair for the badge.
+  pub fn ci_badge(&self) -> (&'static str, &'static str) {
+    match &self.ci {
+      None => ("ci-dot--none", "—"),
+      Some(run) => match run.status {
+        WorkflowStatus::Completed => match run.conclusion {
+          Some(WorkflowConclusion::Success) => ("ci-dot--pass", "Pass"),
+          Some(WorkflowConclusion::Failure) => ("ci-dot--fail", "Fail"),
+          Some(WorkflowConclusion::Cancelled) => ("ci-dot--run", "Cancel"),
+          Some(WorkflowConclusion::Skipped) => ("ci-dot--run", "Skip"),
+          Some(WorkflowConclusion::Neutral) => ("ci-dot--run", "Neutral"),
+          Some(WorkflowConclusion::TimedOut) => ("ci-dot--fail", "Timeout"),
+          Some(WorkflowConclusion::Other) | None => ("ci-dot--run", "Done"),
+        },
+        WorkflowStatus::InProgress | WorkflowStatus::Queued | WorkflowStatus::Requested => {
+          ("ci-dot--run", "Running")
+        }
+        WorkflowStatus::Cancelled => ("ci-dot--run", "Cancel"),
+        WorkflowStatus::Other => ("ci-dot--none", "—"),
+      },
+    }
   }
 }
 
@@ -95,6 +120,17 @@ pub fn RepoCard(data: RepoCardData) -> impl IntoView {
                   <span class="val-issue">{open_issues}</span> " issues · "
                   <span class="val-pr">{open_prs}</span> " PRs"
               </span>
+          </div>
+          <div class="repo-card-ci">
+            {move || {
+                let (dot, label) = data.clone().ci_badge();
+                view! {
+                    <span class="ci-badge">
+                        <span class=format!("ci-dot {}", dot)></span>
+                        <span>{label}</span>
+                    </span>
+                }
+            }}
           </div>
       </div>
   }

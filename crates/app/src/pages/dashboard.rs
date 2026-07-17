@@ -1,12 +1,12 @@
 //! Dashboard page: monitor many repos via a sortable table or compact cards
 //! (AGENTS.md §5.1, §5.2; DESIGN.md "Dashboard Pattern").
 
+use github_api::{GithubApi, GithubClient, IssueParams, PullParams};
 use leptos::prelude::*;
 use leptos::reactive::callback::Callable;
 use leptos::server::LocalResource;
 
-use github_api::{GithubApi, GithubClient, IssueParams, PullParams};
-use models::{Issue, PullRequest, Repo};
+use models::{Issue, PullRequest, Repo, WorkflowRun};
 
 use crate::components::repo_card::{RepoCard, RepoCardData};
 use crate::state::{AuthState, RateLimitState, RepoRef, WatchlistState};
@@ -82,13 +82,14 @@ pub fn DashboardPage() -> impl IntoView {
       };
       let mut out = Vec::with_capacity(repos.len());
       for r in repos.iter() {
-        let (repo, issues, pulls) = fetch_bundle(&client, r).await;
+        let (repo, issues, pulls, ci) = fetch_bundle(&client, r).await;
         rate_limit.update(&client);
         out.push(RepoCardData {
           r#ref: r.clone(),
           repo,
           issues,
           pulls,
+          ci,
         });
       }
       out
@@ -363,12 +364,18 @@ fn repo_table(
                       .iter()
                       .cloned()
                       .map(|data| {
-                          let r = data.r#ref.clone();
-                          let ext = data
+                          let d = data.clone();
+                          let r = d.r#ref.clone();
+                          let (ci_dot, ci_label) = d.ci_badge();
+                          let ext = d
                               .repo
                               .as_ref()
                               .map(|x| x.html_url.clone())
                               .unwrap_or_else(|| format!("https://github.com/{}", r.as_str()));
+                          let open_issues = d.open_issues();
+                          let open_prs = d.open_prs();
+                          let stars = d.repo.as_ref().map(|x| x.stargazers_count).unwrap_or(0);
+                          let last_push = d.last_push_label();
                           view! {
                               <tr>
                                   <td>
@@ -376,16 +383,16 @@ fn repo_table(
                                           <a href=format!("/repo/{}", r.as_str())>{r.as_str()}</a>
                                       </span>
                                   </td>
-                                  <td class="num metric-strong">{data.open_issues()}</td>
-                                  <td class="num metric-pr">{data.open_prs()}</td>
+                                  <td class="num metric-strong">{open_issues}</td>
+                                  <td class="num metric-pr">{open_prs}</td>
                                   <td>
                                       <span class="ci-badge">
-                                          <span class="ci-dot ci-dot--none"></span>
-                                          <span>"—"</span>
+                                          <span class=format!("ci-dot {}", ci_dot)></span>
+                                          <span>{ci_label}</span>
                                       </span>
                                   </td>
-                                  <td class="num">{data.repo.as_ref().map(|x| x.stargazers_count).unwrap_or(0)}</td>
-                                  <td>{data.last_push_label()}</td>
+                                  <td class="num">{stars}</td>
+                                  <td>{last_push}</td>
                                   <td class="num">
                                       <a
                                           class="repo-card-ext"
@@ -407,11 +414,17 @@ fn repo_table(
   }
 }
 
-/// Fetches metadata, issues, and pulls for one repo, tolerating partial failure.
+/// Fetches metadata, issues, pulls, and latest CI run for one repo,
+/// tolerating partial failure on any single piece.
 async fn fetch_bundle(
   client: &GithubClient,
   r: &RepoRef,
-) -> (Option<Repo>, Vec<Issue>, Vec<PullRequest>) {
+) -> (
+  Option<Repo>,
+  Vec<Issue>,
+  Vec<PullRequest>,
+  Option<WorkflowRun>,
+) {
   let repo = client.get_repo(&r.owner, &r.name).await.ok();
   let issues = client
     .list_issues(
@@ -440,7 +453,12 @@ async fn fetch_bundle(
     .await
     .map(|(v, _)| v)
     .unwrap_or_default();
-  (repo, issues, pulls)
+  let ci = client
+    .latest_workflow_run(&r.owner, &r.name)
+    .await
+    .ok()
+    .flatten();
+  (repo, issues, pulls, ci)
 }
 
 /// Compact card grid of monitored repos (used when the user prefers cards).
