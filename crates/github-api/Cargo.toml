@@ -1,0 +1,17 @@
+[package]
+name = "github-api"
+description = "GitHub REST API client for Lepo (wasm + native). Reusable without Leptos."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+models.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+# wasm HTTP client — compiles on wasm32 and (with the wasm-bindgen backend) natively
+gloo-net.workspace = true
+
+[dev-dependencies]
