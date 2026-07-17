@@ -379,6 +379,34 @@ a {
   font: var(--typography-body-sm-strong);
   flex-basis: 100%;
 }
+.add-repo-success {
+  color: #1a7f37;
+  font: var(--typography-body-sm-strong);
+  flex-basis: 100%;
+}
+.button-loading {
+  opacity: 0.75;
+  cursor: progress;
+}
+.button-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--spacing-xxs);
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--rounded-full);
+  animation: button-spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+:root[data-theme="dark"] .add-repo-success {
+  color: #3fb950;
+}
 
 .repo-grid {
   display: grid;

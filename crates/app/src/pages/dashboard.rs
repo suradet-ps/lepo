@@ -44,6 +44,9 @@ pub fn DashboardPage() -> impl IntoView {
   let (sort_key, set_sort_key) = signal(SortKey::Name);
   let (sort_asc, set_sort_asc) = signal(true);
 
+  // Tracks the success confirmation after a repo is added.
+  let (add_success, set_add_success) = signal(Option::<String>::None);
+
   let add_repo = Action::new_local(move |input: &String| {
     let raw = input.trim().to_string();
     let watchlist = watchlist;
@@ -55,10 +58,11 @@ pub fn DashboardPage() -> impl IntoView {
           } else if let Some(client) = auth.client() {
             match client.get_repo(&r.owner, &r.name).await {
               Ok(_) => {
-                watchlist.add(r);
+                watchlist.add(r.clone());
                 let _ = watchlist.save();
                 rate_limit.update(&client);
                 set_add_error.set(None);
+                set_add_success.set(Some(format!("Added {}", r.as_str())));
               }
               Err(e) => set_add_error.set(Some(e.to_string())),
             }
@@ -156,10 +160,25 @@ pub fn DashboardPage() -> impl IntoView {
                       class="text-input"
                       placeholder="owner/repo"
                       prop:value=move || new_repo.get()
-                      on:input=move |ev| set_new_repo.set(event_target_value(&ev))
+                      on:input=move |ev| {
+                          set_new_repo.set(event_target_value(&ev));
+                          set_add_error.set(None);
+                          set_add_success.set(None);
+                      }
                   />
-                  <button class="button-primary" on:click=move |_| { add_repo.dispatch(new_repo.get()); }>
-                      "Add repo"
+                  <button
+                      class="button-primary"
+                      class:button-loading=move || add_repo.pending().get()
+                      disabled=move || add_repo.pending().get()
+                      on:click=move |_| { add_repo.dispatch(new_repo.get()); }
+                  >
+                      {move || {
+                          if add_repo.pending().get() {
+                              view! { <span class="button-spinner"></span> "Adding…" }.into_any()
+                          } else {
+                              view! { "Add repo" }.into_any()
+                          }
+                      }}
                   </button>
               </div>
           </div>
@@ -167,6 +186,11 @@ pub fn DashboardPage() -> impl IntoView {
               add_error
                   .get()
                   .map(|msg| view! { <span class="add-repo-error">{msg}</span> })
+          }}
+          {move || {
+              add_success
+                  .get()
+                  .map(|msg| view! { <span class="add-repo-success">{msg}</span> })
           }}
 
           <Transition
