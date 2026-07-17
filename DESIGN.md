@@ -140,6 +140,44 @@ The radius vocabulary is essentially three values: 16px for most things, 32px fo
 - **Avatar circles:** 32–48px at `{rounded.full}` for in-pin attribution and profile chips.
 - **Feature card imagery:** typically 4:5 portrait on home-page category cards, with the photo occupying ~60% of the card and the headline + CTA stacked beneath.
 
+## Dashboard Pattern
+
+The dashboard monitors **many repositories at once** (the target user watches dozens of
+repos simultaneously). This is an operational monitoring surface, not a content library,
+so the primary display is a **sortable table**, with an optional **compact card grid**
+toggle for users who prefer visual browsing. See AGENTS.md §5.2.
+
+### Display modes
+
+- **Table view (default for large watchlists):** use when the user must compare attributes
+  across repos, sort by a column, or scan a long list quickly. Each row is one repo;
+  columns are Repo · Open Issues · Open PRs · CI status · Stars · Last push. Rows are
+  dense (44px height), left-aligned, with subtle hairline dividers — no card chrome per
+  row. CI status uses a semantic color dot + label, never a full chart.
+- **Card view (compact):** use when the watchlist is small (< 12 repos) or the user
+  prefers browsable tiles. Cards are denser than the v1 cards — single row of metrics, no
+  large KPI numbers. Keep `minmax(220px, 1fr)` so more fit per row.
+
+Always offer a **view toggle** (table ⇄ cards) in the page toolbar so the user picks the
+density that fits their workflow.
+
+### Summary & freshness
+
+- A **summary strip** sits above the list: total open issues, total open PRs, total repos
+  monitored, and a "last updated" timestamp. This is the at-a-glance health check.
+- A **search/filter input** filters the list by repo name live (client-side).
+- Sortable column headers (issues, PRs, stars, last push) let the user surface the
+  noisiest or stalest repos first — the core monitoring job.
+- Empty / loading / error states are handled per repo row (skeleton rows in table mode,
+  skeleton cards in card mode). A single failed repo fetch must not blank the whole list.
+
+### Semantic signals
+
+- CI status: green = passing, red = failing, amber = in progress / unknown. Pair the color
+  with a text label and an `aria-label` — never color alone.
+- "Needs attention" repos (high open issues relative to size, failing CI, or no push in N
+  days) may be subtly emphasized, but avoid alarmist styling for normal state.
+
 ## Components
 
 > **No hover states documented** per system policy. Each spec covers Default and Active/Pressed only.
