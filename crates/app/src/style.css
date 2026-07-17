@@ -321,9 +321,9 @@ a {
   color: var(--colors-ash);
 }
 .text-input:focus {
-  outline: 2px solid var(--colors-ink);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--colors-focus-outer);
+  outline: none;
+  border-color: var(--colors-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--colors-primary) 22%, transparent);
 }
 
 /* ---------- Token form ---------- */
