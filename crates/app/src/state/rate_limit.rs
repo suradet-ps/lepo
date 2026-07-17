@@ -11,6 +11,8 @@ use models::RateLimit;
 pub struct RateLimitState {
   /// The most recent rate-limit snapshot, if any response has arrived.
   pub limit: RwSignal<Option<RateLimit>>,
+  /// Wall-clock timestamp (RFC3339) of the last successful data sync.
+  pub last_updated: RwSignal<Option<String>>,
 }
 
 impl RateLimitState {
@@ -18,19 +20,24 @@ impl RateLimitState {
   pub fn new() -> RateLimitState {
     RateLimitState {
       limit: RwSignal::new(None),
+      last_updated: RwSignal::new(None),
     }
   }
 
-  /// Updates the snapshot from a client after a request.
+  /// Updates the snapshot from a client after a request, stamping the sync time.
   pub fn update(&self, client: &github_api::GithubClient) {
     if let Some(rl) = client.last_rate_limit() {
       self.limit.set(Some(rl));
+      self
+        .last_updated
+        .set(Some(crate::time::now().format("%H:%M").to_string()));
     }
   }
 
   /// Clears the snapshot (e.g. on logout).
   pub fn reset(&self) {
     self.limit.set(None);
+    self.last_updated.set(None);
   }
 }
 

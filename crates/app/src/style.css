@@ -211,6 +211,10 @@ a {
 .primary-nav-rate {
   margin-left: auto;
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-left: var(--spacing-md);
 }
 
 .app-main {
@@ -317,9 +321,9 @@ a {
   color: var(--colors-ash);
 }
 .text-input:focus {
-  outline: 2px solid var(--colors-ink);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--colors-focus-outer);
+  outline: none;
+  border-color: var(--colors-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--colors-primary) 22%, transparent);
 }
 
 /* ---------- Token form ---------- */
@@ -379,28 +383,54 @@ a {
   font: var(--typography-body-sm-strong);
   flex-basis: 100%;
 }
+.add-repo-success {
+  color: #1a7f37;
+  font: var(--typography-body-sm-strong);
+  flex-basis: 100%;
+}
+.button-loading {
+  opacity: 0.75;
+  cursor: progress;
+}
+.button-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--spacing-xxs);
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--rounded-full);
+  animation: button-spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+:root[data-theme="dark"] .add-repo-success {
+  color: #3fb950;
+}
 
 .repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-sm);
 }
 
 .repo-card {
   background: var(--colors-surface-card);
   border: 1px solid var(--colors-hairline);
   border-radius: var(--rounded-md);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  transition: transform 160ms ease, box-shadow 160ms ease,
-    border-color 160ms ease;
+  gap: var(--spacing-xs);
+  transition: border-color 120ms ease, background 120ms ease;
 }
 .repo-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
   border-color: var(--colors-stone);
+  background: var(--colors-canvas);
 }
 .repo-card-head {
   display: flex;
@@ -411,7 +441,7 @@ a {
 .repo-card-title {
   font: var(--typography-body-strong);
   color: var(--colors-ink);
-  font-size: 15px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -421,10 +451,10 @@ a {
 }
 .repo-card-ext {
   color: var(--colors-ash);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
@@ -435,6 +465,10 @@ a {
 .repo-card-ext:hover {
   background: var(--colors-secondary-bg);
   color: var(--colors-ink);
+}
+/* In the table the external-link button sits in a right-aligned actions cell. */
+.repo-table td.actions .repo-card-ext {
+  margin-left: auto;
 }
 .repo-card-stats {
   display: flex;
@@ -448,31 +482,22 @@ a {
   gap: 2px;
 }
 .repo-card-counts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
-  margin-top: 2px;
-  padding-top: var(--spacing-sm);
-  border-top: 1px solid var(--colors-hairline-soft);
-}
-.repo-card-metric {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.repo-card-metric-value {
-  font: 700 22px/1 var(--font-sans);
-  color: var(--colors-ink);
-  letter-spacing: -0.6px;
-}
-.repo-card-metric-label {
-  font: var(--typography-caption-sm);
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  font: var(--typography-caption-md);
   color: var(--colors-mute);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
-.repo-card-metric--pr .repo-card-metric-value {
+.repo-card-counts .val-issue {
+  color: var(--colors-ink);
+  font: var(--typography-body-strong);
+}
+.repo-card-counts .val-pr {
   color: var(--colors-primary);
+  font: var(--typography-body-strong);
+}
+.repo-card-ci {
+  margin-top: var(--spacing-sm);
 }
 
 /* ---------- Detail page rows ---------- */
@@ -590,27 +615,63 @@ a {
   display: inline-flex;
   align-items: center;
 }
-.rl-badge {
+/* Theme toggle in the navbar. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: var(--rounded-full);
-  padding: 4px 10px;
-  font: var(--typography-button-sm);
-  white-space: nowrap;
-}
-.rl-badge-green {
-  background: var(--colors-success-pale);
-  color: var(--colors-success-deep);
-}
-.rl-badge-yellow {
-  background: var(--colors-secondary-bg);
-  color: var(--colors-charcoal);
-}
-.rl-badge-red {
-  background: var(--colors-error);
-  color: var(--colors-on-dark);
-}
-.rl-badge-unknown {
+  border: 1px solid var(--colors-hairline);
   background: var(--colors-surface-card);
+  color: var(--colors-ink);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.theme-toggle:hover {
+  border-color: var(--colors-primary);
+  color: var(--colors-primary);
+}
+/* Compact, muted meter: a status dot + remaining count, no loud fill. */
+.rl-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font: var(--typography-caption-md);
   color: var(--colors-mute);
+  white-space: nowrap;
+  cursor: default;
+}
+.rl-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--rounded-full);
+  flex: 0 0 auto;
+  background: var(--colors-ash);
+}
+.rl-text {
+  font-variant-numeric: tabular-nums;
+}
+.rl-meter-green .rl-dot {
+  background: #1a7f37;
+}
+.rl-meter-amber .rl-dot {
+  background: #bf8700;
+}
+.rl-meter-red .rl-dot {
+  background: var(--colors-error);
+}
+.rl-meter-red .rl-text {
+  color: var(--colors-error);
+}
+:root[data-theme="dark"] .rl-meter-green .rl-dot {
+  background: #3fb950;
+}
+:root[data-theme="dark"] .rl-meter-amber .rl-dot {
+  background: #d29922;
 }
 
 /* ---------- Settings ---------- */
@@ -674,6 +735,229 @@ a {
   margin-bottom: 0;
 }
 
+/* ---------- Dashboard toolbar & summary ---------- */
+.dash-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-lg);
+}
+.dash-toolbar .add-repo {
+  margin-bottom: 0;
+  flex: 1 1 240px;
+}
+.dash-toolbar .text-input {
+  width: 100%;
+}
+.dash-search {
+  position: relative;
+  flex: 1 1 260px;
+  min-width: 200px;
+}
+.dash-search .text-input {
+  padding-left: 36px;
+  width: 100%;
+}
+.dash-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--colors-ash);
+  pointer-events: none;
+  font-size: 14px;
+}
+.view-toggle {
+  display: inline-flex;
+  background: var(--colors-surface-card);
+  border: 1px solid var(--colors-hairline);
+  border-radius: var(--rounded-full);
+  padding: var(--spacing-xxs);
+  gap: 2px;
+}
+.view-toggle button {
+  background: transparent;
+  border: none;
+  color: var(--colors-mute);
+  font: var(--typography-button-sm);
+  padding: 6px 12px;
+  border-radius: var(--rounded-full);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.view-toggle button:hover {
+  color: var(--colors-ink);
+}
+.view-toggle button.active {
+  background: var(--colors-canvas);
+  color: var(--colors-ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+.summary-item {
+  background: var(--colors-surface-card);
+  border: 1px solid var(--colors-hairline);
+  border-radius: var(--rounded-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.summary-value {
+  display: block;
+  font: 700 24px/1 var(--font-sans);
+  color: var(--colors-ink);
+  letter-spacing: -0.6px;
+}
+.summary-value.skeleton {
+  height: 24px;
+  border-radius: var(--rounded-sm);
+}
+.summary-label {
+  font: var(--typography-caption-md);
+  color: var(--colors-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.summary-freshness {
+  font: var(--typography-caption-sm);
+  color: var(--colors-mute);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
+}
+
+/* ---------- Repo table (monitoring view) ---------- */
+.repo-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--colors-hairline);
+  border-radius: var(--rounded-lg);
+  background: var(--colors-canvas);
+}
+.repo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--typography-body-sm);
+}
+.repo-table thead th {
+  text-align: left;
+  font: var(--typography-caption-md);
+  color: var(--colors-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--colors-hairline);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.repo-table thead th:hover {
+  color: var(--colors-ink);
+}
+.repo-table thead th.sorted-asc::after {
+  content: " ▲";
+}
+.repo-table thead th.sorted-desc::after {
+  content: " ▼";
+}
+.repo-table thead th.num,
+.repo-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+/* CI status column is centered (short badge, not numeric). */
+.repo-table thead th.ci-col,
+.repo-table td.ci-col {
+  text-align: center;
+}
+.repo-table td.ci-col .ci-badge {
+  justify-content: center;
+  width: 100%;
+}
+/* Last-push timestamp is centered for readability. */
+.repo-table thead th.center,
+.repo-table td.center {
+  text-align: center;
+}
+/* Trailing actions column (external link) sits to the far right. */
+.repo-table thead th.actions,
+.repo-table td.actions {
+  text-align: right;
+}
+.repo-table tbody tr {
+  border-bottom: 1px solid var(--colors-hairline-soft);
+  transition: background 120ms ease;
+}
+.repo-table tbody tr:last-child {
+  border-bottom: none;
+}
+.repo-table tbody tr:hover {
+  background: var(--colors-surface-soft);
+}
+.repo-table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--colors-body);
+  vertical-align: middle;
+}
+.repo-table .repo-name {
+  font: var(--typography-body-strong);
+  color: var(--colors-ink);
+}
+.repo-table .repo-name a:hover {
+  color: var(--colors-primary);
+}
+.repo-table .repo-ext {
+  color: var(--colors-ash);
+  margin-left: var(--spacing-xs);
+}
+.repo-table .metric-strong {
+  font: var(--typography-body-strong);
+  color: var(--colors-ink);
+}
+.repo-table .metric-pr {
+  font: var(--typography-body-strong);
+  color: var(--colors-primary);
+}
+
+/* CI status dot */
+.ci-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font: var(--typography-caption-md);
+}
+.ci-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--rounded-full);
+  flex: 0 0 auto;
+}
+.ci-dot--pass {
+  background: #1a7f37;
+}
+.ci-dot--fail {
+  background: var(--colors-error);
+}
+.ci-dot--run {
+  background: #bf8700;
+}
+.ci-dot--none {
+  background: var(--colors-ash);
+}
+:root[data-theme="dark"] .ci-dot--pass {
+  background: #3fb950;
+}
+:root[data-theme="dark"] .ci-dot--run {
+  background: #d29922;
+}
+
 /* ---------- Skeleton loading ---------- */
 .skeleton {
   position: relative;
@@ -709,7 +993,9 @@ a {
   gap: var(--spacing-sm);
 }
 .skeleton-line {
+  display: block;
   height: 14px;
+  width: 100%;
 }
 .skeleton-line--lg {
   height: 28px;
@@ -718,6 +1004,16 @@ a {
 .skeleton-line--sm {
   height: 10px;
   width: 40%;
+}
+/* Skeleton bars inside table cells should fill a sensible width. */
+.repo-table .skeleton-line {
+  width: 80%;
+}
+.repo-table td .skeleton-line--sm {
+  width: 60%;
+}
+.summary-strip .skeleton-line--sm {
+  width: 70%;
 }
 .skeleton-block {
   height: 40px;

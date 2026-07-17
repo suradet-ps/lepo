@@ -9,7 +9,7 @@ use leptos_router::{
 
 use crate::components::rate_limit_badge::RateLimitBadge;
 use crate::pages::{DashboardPage, LoginPage, RepoDetailPage, SettingsPage};
-use crate::state::{AuthState, RateLimitState, SettingsState, WatchlistState};
+use crate::state::{AuthState, RateLimitState, SettingsState, Theme, WatchlistState};
 
 /// The root component. Provides global state via context and renders the router.
 #[component]
@@ -22,10 +22,22 @@ pub fn App() -> impl IntoView {
 
   let auth = expect_context::<AuthState>();
   let settings = expect_context::<SettingsState>();
-  let theme = Signal::derive(move || settings.theme.get().as_attr());
+
+  // Reflect the theme onto the document root so `:root[data-theme]` CSS applies.
+  let theme_attr = move || settings.theme.get().as_attr();
+  leptos::prelude::create_effect(move |_| {
+    let value = theme_attr();
+    if let Some(win) = web_sys::window() {
+      if let Some(doc) = win.document() {
+        if let Some(root) = doc.document_element() {
+          let _ = root.set_attribute("data-theme", value);
+        }
+      }
+    }
+  });
 
   view! {
-      <div class="app-shell" attr:data-theme=move || theme.get()>
+      <div class="app-shell" data-theme=move || settings.theme.get().as_attr()>
           <Router>
               {move || {
                   let location = use_location();
@@ -50,6 +62,26 @@ pub fn App() -> impl IntoView {
                                   </a>
                               </nav>
                               <div class="primary-nav-rate">
+                                  <button
+                                      class="theme-toggle"
+                                      title="Toggle light / dark theme"
+                                      on:click=move |_| {
+                                          let next = match settings.theme.get() {
+                                              Theme::Light => Theme::Dark,
+                                              Theme::Dark => Theme::Light,
+                                          };
+                                          settings.theme.set(next);
+                                          let _ = settings.save_theme();
+                                      }
+                                  >
+                                      {move || {
+                                          if settings.theme.get() == Theme::Light {
+                                              "☀"
+                                          } else {
+                                              "☾"
+                                          }
+                                      }}
+                                  </button>
                                   <RateLimitBadge/>
                               </div>
                           </div>

@@ -17,4 +17,4 @@ pub use pull_request::PullRequest;
 pub use rate_limit::RateLimit;
 pub use repo::{Owner, Repo};
 pub use user::User;
-pub use workflow_run::{WorkflowRun, WorkflowStatus};
+pub use workflow_run::{WorkflowConclusion, WorkflowRun, WorkflowStatus};

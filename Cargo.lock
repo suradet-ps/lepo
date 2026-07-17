@@ -47,6 +47,7 @@ dependencies = [
  "gloo-net",
  "gloo-storage",
  "gloo-timers",
+ "js-sys",
  "leptos",
  "leptos_router",
  "models",

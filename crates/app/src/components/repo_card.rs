@@ -2,7 +2,7 @@
 
 use leptos::prelude::*;
 
-use models::{Issue, PullRequest, Repo};
+use models::{Issue, PullRequest, Repo, WorkflowConclusion, WorkflowRun, WorkflowStatus};
 
 use crate::state::RepoRef;
 
@@ -17,6 +17,70 @@ pub struct RepoCardData {
   pub issues: Vec<Issue>,
   /// Pull requests.
   pub pulls: Vec<PullRequest>,
+  /// Latest CI status (most recent workflow run), if any.
+  pub ci: Option<WorkflowRun>,
+}
+
+impl RepoCardData {
+  /// Open issues excluding pull requests.
+  pub fn open_issues(&self) -> usize {
+    self.issues.iter().filter(|i| !i.is_pr()).count()
+  }
+
+  /// Open pull requests.
+  pub fn open_prs(&self) -> usize {
+    self.pulls.len()
+  }
+
+  /// Human-readable "last push" label from the repo metadata.
+  pub fn last_push_label(&self) -> String {
+    self
+      .repo
+      .as_ref()
+      .and_then(|r| r.pushed_at.as_ref())
+      .map(format_relative)
+      .unwrap_or_else(|| "—".to_string())
+  }
+
+  /// CI status as a (dot-class, label) pair for the badge.
+  pub fn ci_badge(&self) -> (&'static str, &'static str) {
+    match &self.ci {
+      None => ("ci-dot--none", "—"),
+      Some(run) => match run.status {
+        WorkflowStatus::Completed => match run.conclusion {
+          Some(WorkflowConclusion::Success) => ("ci-dot--pass", "Pass"),
+          Some(WorkflowConclusion::Failure) => ("ci-dot--fail", "Fail"),
+          Some(WorkflowConclusion::Cancelled) => ("ci-dot--run", "Cancel"),
+          Some(WorkflowConclusion::Skipped) => ("ci-dot--run", "Skip"),
+          Some(WorkflowConclusion::Neutral) => ("ci-dot--run", "Neutral"),
+          Some(WorkflowConclusion::TimedOut) => ("ci-dot--fail", "Timeout"),
+          Some(WorkflowConclusion::Other) | None => ("ci-dot--run", "Done"),
+        },
+        WorkflowStatus::InProgress | WorkflowStatus::Queued | WorkflowStatus::Requested => {
+          ("ci-dot--run", "Running")
+        }
+        WorkflowStatus::Cancelled => ("ci-dot--run", "Cancel"),
+        WorkflowStatus::Other => ("ci-dot--none", "—"),
+      },
+    }
+  }
+}
+
+/// Formats a timestamp as a short relative label (e.g. "3d ago").
+fn format_relative(ts: &chrono::DateTime<chrono::Utc>) -> String {
+  let now = crate::time::now();
+  let diff = now.signed_duration_since(*ts);
+  if diff.num_minutes() < 1 {
+    "just now".to_string()
+  } else if diff.num_hours() < 1 {
+    format!("{}m ago", diff.num_minutes())
+  } else if diff.num_days() < 1 {
+    format!("{}h ago", diff.num_hours())
+  } else if diff.num_days() < 30 {
+    format!("{}d ago", diff.num_days())
+  } else {
+    format!("{}mo ago", diff.num_days() / 30)
+  }
 }
 
 /// A single repo summary card. Shows star/fork counts, open issue count
@@ -50,19 +114,23 @@ pub fn RepoCard(data: RepoCardData) -> impl IntoView {
                   "↗"
               </a>
           </div>
-          <div class="repo-card-stats">
-              <span class="repo-card-stat">"★ " {stars}</span>
-              <span class="repo-card-stat">"⑂ " {forks}</span>
-          </div>
           <div class="repo-card-counts">
-              <div class="repo-card-metric repo-card-metric--issue">
-                  <span class="repo-card-metric-value">{open_issues}</span>
-                  <span class="repo-card-metric-label">"Open issues"</span>
-              </div>
-              <div class="repo-card-metric repo-card-metric--pr">
-                  <span class="repo-card-metric-value">{open_prs}</span>
-                  <span class="repo-card-metric-label">"Open PRs"</span>
-              </div>
+              <span>"★ " {stars} "  ⑂ " {forks}</span>
+              <span>
+                  <span class="val-issue">{open_issues}</span> " issues · "
+                  <span class="val-pr">{open_prs}</span> " PRs"
+              </span>
+          </div>
+          <div class="repo-card-ci">
+            {move || {
+                let (dot, label) = data.clone().ci_badge();
+                view! {
+                    <span class="ci-badge">
+                        <span class=format!("ci-dot {}", dot)></span>
+                        <span>{label}</span>
+                    </span>
+                }
+            }}
           </div>
       </div>
   }
