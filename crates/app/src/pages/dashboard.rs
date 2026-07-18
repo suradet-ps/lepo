@@ -89,22 +89,18 @@ pub fn DashboardPage() -> impl IntoView {
       // Each bundle already fans out its 4 sub-requests internally, so the
       // whole dashboard now completes in roughly one repo's worth of latency
       // rather than N repos × 4 sequential requests.
-      let out: Vec<RepoCardData> = join_all(
-        repos
-          .iter()
-          .map(|r| fetch_bundle(&client, r))
-      )
-      .await
-      .into_iter()
-      .enumerate()
-      .map(|(i, (repo, issues, pulls, ci))| RepoCardData {
-        r#ref: repos[i].clone(),
-        repo,
-        issues,
-        pulls,
-        ci,
-      })
-      .collect();
+      let out: Vec<RepoCardData> = join_all(repos.iter().map(|r| fetch_bundle(&client, r)))
+        .await
+        .into_iter()
+        .enumerate()
+        .map(|(i, (repo, issues, pulls, ci))| RepoCardData {
+          r#ref: repos[i].clone(),
+          repo,
+          issues,
+          pulls,
+          ci,
+        })
+        .collect();
       rate_limit.update(&client);
       out
     }
@@ -476,12 +472,7 @@ async fn fetch_bundle(
   let pulls_fut = client.list_pulls(&r.owner, &r.name, &pull_params);
   let ci_fut = client.latest_workflow_run(&r.owner, &r.name);
 
-  let (repo, issues, pulls, ci) = futures::join!(
-    repo_fut,
-    issues_fut,
-    pulls_fut,
-    ci_fut,
-  );
+  let (repo, issues, pulls, ci) = futures::join!(repo_fut, issues_fut, pulls_fut, ci_fut,);
 
   (
     repo.ok(),
