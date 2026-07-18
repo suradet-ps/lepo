@@ -6,6 +6,18 @@
     <meta name="description" content="Lepo — monitor your GitHub repositories in one place." />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#fbfbf9" />
+
+    <!--
+      Content Security Policy. Cloudflare Pages injects its Web Analytics beacon
+      (static.cloudflareinsights.com/beacon.min.js) at runtime; the script-src
+      below explicitly allows it alongside our own wasm/inline scripts so the
+      browser stops reporting CSP violations. Adjust the host whitelist if you
+      change analytics providers.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline' https://static.cloudflareinsights.com; connect-src 'self' https://api.github.com https://static.cloudflareinsights.com; img-src 'self' data: https://avatars.githubusercontent.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self';"
+    />
     <title>Lepo — GitHub Repo Monitor</title>
 
     <!-- Favicon -->
