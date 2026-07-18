@@ -1,6 +1,7 @@
 //! Dashboard page: monitor many repos via a sortable table or compact cards
 //! (AGENTS.md §5.1, §5.2; DESIGN.md "Dashboard Pattern").
 
+use futures::future::join_all;
 use github_api::{GithubApi, GithubClient, IssueParams, PullParams};
 use leptos::prelude::*;
 use leptos::reactive::callback::Callable;
@@ -84,18 +85,23 @@ pub fn DashboardPage() -> impl IntoView {
         Some(c) => c,
         None => return Vec::new(),
       };
-      let mut out = Vec::with_capacity(repos.len());
-      for r in repos.iter() {
-        let (repo, issues, pulls, ci) = fetch_bundle(&client, r).await;
-        rate_limit.update(&client);
-        out.push(RepoCardData {
-          r#ref: r.clone(),
+      // Fetch every repo's bundle concurrently instead of one-at-a-time.
+      // Each bundle already fans out its 4 sub-requests internally, so the
+      // whole dashboard now completes in roughly one repo's worth of latency
+      // rather than N repos × 4 sequential requests.
+      let out: Vec<RepoCardData> = join_all(repos.iter().map(|r| fetch_bundle(&client, r)))
+        .await
+        .into_iter()
+        .enumerate()
+        .map(|(i, (repo, issues, pulls, ci))| RepoCardData {
+          r#ref: repos[i].clone(),
           repo,
           issues,
           pulls,
           ci,
-        });
-      }
+        })
+        .collect();
+      rate_limit.update(&client);
       out
     }
   });
@@ -439,7 +445,8 @@ fn repo_table(
 }
 
 /// Fetches metadata, issues, pulls, and latest CI run for one repo,
-/// tolerating partial failure on any single piece.
+/// tolerating partial failure on any single piece. The four sub-requests run
+/// concurrently so a single repo's bundle costs ~1 round-trip of latency.
 async fn fetch_bundle(
   client: &GithubClient,
   r: &RepoRef,
@@ -449,40 +456,30 @@ async fn fetch_bundle(
   Vec<PullRequest>,
   Option<WorkflowRun>,
 ) {
-  let repo = client.get_repo(&r.owner, &r.name).await.ok();
-  let issues = client
-    .list_issues(
-      &r.owner,
-      &r.name,
-      &IssueParams {
-        state: "open".into(),
-        labels: vec![],
-        sort: String::new(),
-        per_page: 30,
-      },
-    )
-    .await
-    .map(|(v, _)| v)
-    .unwrap_or_default();
-  let pulls = client
-    .list_pulls(
-      &r.owner,
-      &r.name,
-      &PullParams {
-        state: "open".into(),
-        sort: String::new(),
-        per_page: 30,
-      },
-    )
-    .await
-    .map(|(v, _)| v)
-    .unwrap_or_default();
-  let ci = client
-    .latest_workflow_run(&r.owner, &r.name)
-    .await
-    .ok()
-    .flatten();
-  (repo, issues, pulls, ci)
+  let repo_fut = client.get_repo(&r.owner, &r.name);
+  let issue_params = IssueParams {
+    state: "open".into(),
+    labels: vec![],
+    sort: String::new(),
+    per_page: 30,
+  };
+  let issues_fut = client.list_issues(&r.owner, &r.name, &issue_params);
+  let pull_params = PullParams {
+    state: "open".into(),
+    sort: String::new(),
+    per_page: 30,
+  };
+  let pulls_fut = client.list_pulls(&r.owner, &r.name, &pull_params);
+  let ci_fut = client.latest_workflow_run(&r.owner, &r.name);
+
+  let (repo, issues, pulls, ci) = futures::join!(repo_fut, issues_fut, pulls_fut, ci_fut,);
+
+  (
+    repo.ok(),
+    issues.map(|(v, _)| v).unwrap_or_default(),
+    pulls.map(|(v, _)| v).unwrap_or_default(),
+    ci.ok().flatten(),
+  )
 }
 
 /// Compact card grid of monitored repos (used when the user prefers cards).
