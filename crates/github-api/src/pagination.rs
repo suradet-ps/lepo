@@ -151,6 +151,13 @@ fn urlencode(input: &str) -> String {
 mod tests {
   use super::*;
 
+  fn headers(pairs: &[(&str, &str)]) -> HashMap<String, String> {
+    pairs
+      .iter()
+      .map(|(k, v)| (k.to_string(), v.to_string()))
+      .collect()
+  }
+
   #[test]
   fn parse_finds_next_rel() {
     let header = "<https://api.github.com/repos/o/r/issues?page=2>; rel=\"next\", <https://api.github.com/repos/o/r/issues?page=5>; rel=\"last\"";
@@ -244,5 +251,59 @@ mod tests {
   fn urlencode_spaces_and_symbols() {
     assert_eq!(urlencode("a b"), "a%20b");
     assert_eq!(urlencode("keep-_.~"), "keep-_.~");
+  }
+
+  #[test]
+  fn parse_only_next_without_last() {
+    let header = "<https://api.github.com/repos/o/r/issues?page=2>; rel=\"next\"";
+    let p = Pagination::parse(Some(header));
+    assert_eq!(
+      p.next.as_deref(),
+      Some("https://api.github.com/repos/o/r/issues?page=2")
+    );
+    assert_eq!(p.last, None);
+  }
+
+  #[test]
+  fn parse_multiple_pages() {
+    let header = "<https://api.github.com/repos/o/r/issues?page=3>; rel=\"next\", <https://api.github.com/repos/o/r/issues?page=10>; rel=\"last\"";
+    let p = Pagination::parse(Some(header));
+    assert_eq!(p.total_pages(), Some(10));
+    assert_eq!(
+      p.next.as_deref(),
+      Some("https://api.github.com/repos/o/r/issues?page=3")
+    );
+  }
+
+  #[test]
+  fn parse_empty_string_is_default() {
+    let p = Pagination::parse(Some(""));
+    assert_eq!(p.next, None);
+    assert_eq!(p.last, None);
+  }
+
+  #[test]
+  fn total_pages_single_page() {
+    let p = Pagination {
+      next: None,
+      last: Some("https://api.github.com/repos/o/r/issues?page=1".into()),
+    };
+    assert_eq!(p.total_pages(), Some(1));
+  }
+
+  #[test]
+  fn from_headers_extracts_link() {
+    let h = headers(&[
+      ("link", "<https://api.github.com/repos/o/r/issues?page=2>; rel=\"next\""),
+    ]);
+    let p = Pagination::from_headers(&h);
+    assert!(p.next.is_some());
+  }
+
+  #[test]
+  fn from_headers_missing_link_is_default() {
+    let h = headers(&[("content-type", "application/json")]);
+    let p = Pagination::from_headers(&h);
+    assert_eq!(p, Pagination::default());
   }
 }

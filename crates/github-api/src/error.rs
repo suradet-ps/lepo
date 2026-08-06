@@ -27,3 +27,50 @@ pub enum ApiError {
   #[error("rate limit exceeded; resets at unix {reset}")]
   RateLimited { reset: u64 },
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn request_error_display() {
+    let e = ApiError::Request("connection refused".into());
+    assert_eq!(e.to_string(), "network request failed: connection refused");
+  }
+
+  #[test]
+  fn parse_error_display() {
+    let e = ApiError::Parse("invalid json".into());
+    assert_eq!(e.to_string(), "failed to parse response: invalid json");
+  }
+
+  #[test]
+  fn status_error_display() {
+    let e = ApiError::Status {
+      status: 500,
+      message: "server error".into(),
+    };
+    assert_eq!(e.to_string(), "github returned 500: server error");
+  }
+
+  #[test]
+  fn auth_error_display() {
+    let e = ApiError::Auth("token rejected".into());
+    assert_eq!(e.to_string(), "authentication failed: token rejected");
+  }
+
+  #[test]
+  fn not_found_error_display() {
+    let e = ApiError::NotFound("repo not found".into());
+    assert_eq!(e.to_string(), "resource not found: repo not found");
+  }
+
+  #[test]
+  fn rate_limited_error_display() {
+    let e = ApiError::RateLimited { reset: 1700000000 };
+    assert_eq!(
+      e.to_string(),
+      "rate limit exceeded; resets at unix 1700000000"
+    );
+  }
+}
