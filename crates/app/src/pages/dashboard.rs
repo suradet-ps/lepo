@@ -118,7 +118,7 @@ pub fn DashboardPage() -> impl IntoView {
       match RepoRef::parse(&raw) {
         Ok(r) => {
           if watchlist.contains(&r) {
-            set_add_error.set(Some(format!("{} is already in your watchlist", r.as_str())));
+            set_add_error.set(Some(format!("{r} is already in your watchlist")));
           } else if let Some(client) = auth.client() {
             match client.get_repo(&r.owner, &r.name).await {
               Ok(_) => {
@@ -126,7 +126,7 @@ pub fn DashboardPage() -> impl IntoView {
                 let _ = watchlist.save();
                 rate_limit.update(&client);
                 set_add_error.set(None);
-                set_add_success.set(Some(format!("Added {}", r.as_str())));
+                set_add_success.set(Some(format!("Added {r}")));
               }
               Err(e) => set_add_error.set(Some(e.to_string())),
             }
@@ -157,17 +157,15 @@ pub fn DashboardPage() -> impl IntoView {
         .await
         .into_iter()
         .enumerate()
-        .map(
-          |(i, (repo, issues, pulls, ci, total_issues, total_prs))| RepoCardData {
-            r#ref: repos[i].clone(),
-            repo,
-            issues,
-            pulls,
-            ci,
-            total_open_issues: total_issues,
-            total_open_prs: total_prs,
-          },
-        )
+        .map(|(i, bundle)| RepoCardData {
+          r#ref: repos[i].clone(),
+          repo: bundle.repo,
+          issues: bundle.issues,
+          pulls: bundle.pulls,
+          ci: bundle.ci,
+          total_open_issues: bundle.total_open_issues,
+          total_open_prs: bundle.total_open_prs,
+        })
         .collect();
       rate_limit.update(&client);
       out
@@ -182,14 +180,14 @@ pub fn DashboardPage() -> impl IntoView {
       None => return Vec::new(),
     };
     if !q.is_empty() {
-      items.retain(|d| d.r#ref.as_str().to_lowercase().contains(&q));
+      items.retain(|d| d.r#ref.to_string().to_lowercase().contains(&q));
     }
     let asc = sort_asc.get();
     items.sort_by(|a, b| {
       let cmp = match sort_key.get() {
-        SortKey::Name => a.r#ref.as_str().cmp(&b.r#ref.as_str()),
-        SortKey::Issues => a.open_issues().cmp(&b.open_issues()),
-        SortKey::Prs => a.open_prs().cmp(&b.open_prs()),
+        SortKey::Name => a.r#ref.to_string().cmp(&b.r#ref.to_string()),
+        SortKey::Issues => a.open_issue_count().cmp(&b.open_issue_count()),
+        SortKey::Prs => a.open_prs_count().cmp(&b.open_prs_count()),
         SortKey::Stars => a
           .repo
           .as_ref()
@@ -205,8 +203,8 @@ pub fn DashboardPage() -> impl IntoView {
   let summary = Signal::derive(move || {
     let items = bundles.get().unwrap_or_default();
     let repos = items.len();
-    let issues: usize = items.iter().map(RepoCardData::open_issues).sum();
-    let prs: usize = items.iter().map(RepoCardData::open_prs).sum();
+    let issues: usize = items.iter().map(RepoCardData::open_issue_count).sum();
+    let prs: usize = items.iter().map(RepoCardData::open_prs_count).sum();
     (repos, issues, prs)
   });
 
@@ -466,16 +464,16 @@ fn repo_table(
                           let ext = data
                               .repo
                               .as_ref()
-                              .map_or_else(|| format!("https://github.com/{}", r.as_str()), |x| x.html_url.clone());
-                          let open_issues = data.open_issues();
-                          let open_prs = data.open_prs();
+                              .map_or_else(|| r.github_url(), |x| x.html_url.clone());
+                          let open_issues = data.open_issue_count();
+                          let open_prs = data.open_prs_count();
                           let stars = data.repo.as_ref().map_or(0, |x| x.stargazers_count);
                           let last_push = data.last_push_label();
                           view! {
                               <tr>
                                   <td>
                                       <span class="repo-name">
-                                          <a href=format!("/repo/{}", r.as_str())>{r.as_str()}</a>
+                                          <a href=format!("/repo/{r}")>{r.to_string()}</a>
                                       </span>
                                   </td>
                                   <td class="num metric-strong">{open_issues}</td>
@@ -509,37 +507,27 @@ fn repo_table(
   }
 }
 
+/// Result of fetching all data for a single repo on the dashboard.
+struct RepoBundle {
+  repo: Option<Repo>,
+  issues: Vec<Issue>,
+  pulls: Vec<PullRequest>,
+  ci: Option<WorkflowRun>,
+  total_open_issues: usize,
+  total_open_prs: usize,
+}
+
 /// Fetches metadata, issues, pulls, and latest CI run for one repo,
 /// tolerating partial failure on any single piece. The four sub-requests run
 /// concurrently so a single repo's bundle costs ~1 round-trip of latency.
 ///
 /// Returns the card data including total open-issue and open-PR counts derived
 /// from the `Link` header pagination (see `Pagination::total_pages`).
-async fn fetch_bundle(
-  client: &GithubClient,
-  r: &RepoRef,
-) -> (
-  Option<Repo>,
-  Vec<Issue>,
-  Vec<PullRequest>,
-  Option<WorkflowRun>,
-  usize,
-  usize,
-) {
+async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
   let repo_fut = client.get_repo(&r.owner, &r.name);
-  let issue_params = IssueParams {
-    state: "open".into(),
-    labels: vec![],
-    sort: String::new(),
-    creator: String::new(),
-    per_page: 30,
-  };
+  let issue_params = IssueParams::default();
   let issues_fut = client.list_issues(&r.owner, &r.name, &issue_params);
-  let pull_params = PullParams {
-    state: "open".into(),
-    sort: String::new(),
-    per_page: 30,
-  };
+  let pull_params = PullParams::default();
   let pulls_fut = client.list_pulls(&r.owner, &r.name, &pull_params);
   let ci_fut = client.latest_workflow_run(&r.owner, &r.name);
 
@@ -558,14 +546,14 @@ async fn fetch_bundle(
     .total_pages()
     .map_or_else(|| pulls_vec.len(), |pages| per_page * pages as usize);
 
-  (
-    repo.ok(),
-    issues_vec,
-    pulls_vec,
-    ci.ok().flatten(),
+  RepoBundle {
+    repo: repo.ok(),
+    issues: issues_vec,
+    pulls: pulls_vec,
+    ci: ci.ok().flatten(),
     total_open_issues,
     total_open_prs,
-  )
+  }
 }
 
 /// Compact card grid of monitored repos (used when the user prefers cards).
@@ -590,8 +578,6 @@ fn render_dashboard(
 ) -> impl IntoView {
   let is_empty = items.is_empty();
   let is_table = mode == ViewMode::Table;
-  let items_for_table = items.clone();
-  let items_for_cards = items;
   view! {
       <div class="dash-list">
           {move || {
@@ -605,14 +591,14 @@ fn render_dashboard(
                   .into_any()
               } else if is_table {
                   repo_table(
-                      items_for_table.clone(),
+                      items.clone(),
                       sort_key,
                       sort_asc,
                       on_sort,
                   )
                   .into_any()
               } else {
-                  card_grid(items_for_cards.clone()).into_any()
+                  card_grid(items.clone()).into_any()
               }
           }}
       </div>

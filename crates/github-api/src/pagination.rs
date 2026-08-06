@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 /// Query parameters accepted by `list_issues`.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IssueParams {
   /// `open`, `closed`, or `all`.
   pub state: String,
@@ -20,6 +20,18 @@ pub struct IssueParams {
   pub creator: String,
   /// Page size.
   pub per_page: u8,
+}
+
+impl Default for IssueParams {
+  fn default() -> Self {
+    Self {
+      state: "open".into(),
+      labels: Vec::new(),
+      sort: "updated".into(),
+      creator: String::new(),
+      per_page: 30,
+    }
+  }
 }
 
 impl IssueParams {
@@ -44,7 +56,7 @@ impl IssueParams {
 }
 
 /// Query parameters accepted by `list_pulls`.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PullParams {
   /// `open`, `closed`, or `all`.
   pub state: String,
@@ -52,6 +64,16 @@ pub struct PullParams {
   pub sort: String,
   /// Page size.
   pub per_page: u8,
+}
+
+impl Default for PullParams {
+  fn default() -> Self {
+    Self {
+      state: "open".into(),
+      sort: "updated".into(),
+      per_page: 30,
+    }
+  }
 }
 
 impl PullParams {

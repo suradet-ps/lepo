@@ -70,7 +70,9 @@ pub fn App() -> impl IntoView {
                                               Theme::Dark => Theme::Light,
                                           };
                                           settings.theme.set(next);
-                                          let _ = settings.save_theme();
+                                          if let Err(e) = settings.save_theme() {
+                                              leptos::logging::error!("failed to save theme: {e}");
+                                          }
                                       }
                                   >
                                       {move || {

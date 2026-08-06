@@ -7,7 +7,7 @@ use models::{Issue, PullRequest, Repo, WorkflowConclusion, WorkflowRun, Workflow
 use crate::state::RepoRef;
 
 /// Data needed to render a [`RepoCard`].
-#[derive(Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct RepoCardData {
   /// The repo reference.
   pub r#ref: RepoRef,
@@ -20,16 +20,14 @@ pub struct RepoCardData {
   /// Latest CI status (most recent workflow run), if any.
   pub ci: Option<WorkflowRun>,
   /// Total number of open issues across all pages (0 = use `issues.len()`).
-  #[serde(default)]
   pub total_open_issues: usize,
   /// Total number of open PRs across all pages (0 = use `pulls.len()`).
-  #[serde(default)]
   pub total_open_prs: usize,
 }
 
 impl RepoCardData {
   /// Open issues excluding pull requests. Uses the total count when available.
-  pub fn open_issues(&self) -> usize {
+  pub fn open_issue_count(&self) -> usize {
     if self.total_open_issues > 0 {
       self.total_open_issues
     } else {
@@ -38,7 +36,7 @@ impl RepoCardData {
   }
 
   /// Open pull requests. Uses the total count when available.
-  pub const fn open_prs(&self) -> usize {
+  pub const fn open_prs_count(&self) -> usize {
     if self.total_open_prs > 0 {
       self.total_open_prs
     } else {
@@ -104,13 +102,12 @@ pub fn RepoCard(data: RepoCardData) -> impl IntoView {
   let open_prs = data.pulls.len();
   let stars = data.repo.as_ref().map_or(0, |r| r.stargazers_count);
   let forks = data.repo.as_ref().map_or(0, |r| r.forks_count);
-  let ref_str = data.r#ref.as_str();
-  let ref_str_clone = ref_str.clone();
+  let ref_str = data.r#ref.to_string();
 
   view! {
       <div class="repo-card">
           <div class="repo-card-head">
-              <a class="repo-card-title" href=format!("/repo/{}", data.r#ref.as_str())>
+              <a class="repo-card-title" href=format!("/repo/{}", data.r#ref)>
                   {ref_str}
               </a>
               <a
@@ -118,7 +115,7 @@ pub fn RepoCard(data: RepoCardData) -> impl IntoView {
                   href=data
                       .repo
                       .as_ref()
-                      .map_or_else(|| format!("https://github.com/{ref_str_clone}"), |r| r.html_url.clone())
+                      .map_or_else(|| data.r#ref.github_url(), |r| r.html_url.clone())
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Open on GitHub"

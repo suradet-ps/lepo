@@ -35,7 +35,9 @@ pub fn SettingsPage() -> impl IntoView {
       _ => RefreshInterval::Manual,
     };
     settings.refresh_interval.set(interval);
-    let _ = settings.save_refresh_interval();
+    if let Err(e) = settings.save_refresh_interval() {
+      leptos::logging::error!("failed to save refresh interval: {e}");
+    }
   };
 
   let remove_repo = Action::new_local(move |r: &RepoRef| {
@@ -79,7 +81,7 @@ pub fn SettingsPage() -> impl IntoView {
                                   let r2 = r.clone();
                                   view! {
                                       <li>
-                                          <span>{r.as_str()}</span>
+                                          <span>{r.to_string()}</span>
                                           <button
                                               class="button-tertiary"
                                               on:click=move |_| { remove_repo.dispatch(r2.clone()); }

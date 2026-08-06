@@ -8,12 +8,35 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_params_map;
 
-use github_api::{GithubApi, IssueParams, Pagination, PullParams};
+use github_api::{GithubApi, GithubClient, IssueParams, Pagination, PullParams};
 use models::Issue;
 
 use crate::components::issue_row::IssueRow;
 use crate::components::pr_row::PrRow;
 use crate::state::{AuthState, RateLimitState, RepoRef};
+
+/// Fetches one page from a raw URL, appends items to `out`, and returns the
+/// next-page cursor. Handles status errors and JSON parse failures gracefully
+/// (returns `None` on any error).
+async fn fetch_next_page<T: serde::de::DeserializeOwned>(
+  client: &GithubClient,
+  url: &str,
+  out: &mut Vec<T>,
+) -> Option<Option<String>> {
+  use gloo_net::http::Request;
+  let headers = client.auth_headers();
+  let resp = Request::get(url).headers(headers).send().await.ok()?;
+  let status = resp.status();
+  let h = resp.headers();
+  let hm = github_api::client::headers_to_map(&h);
+  if !(200..300).contains(&status) {
+    return None;
+  }
+  let body: Vec<T> = resp.json().await.unwrap_or_default();
+  let pagination = Pagination::from_headers(&hm);
+  out.extend(body);
+  Some(pagination.next)
+}
 
 /// The repo detail route. Expects an `owner` and `repo` path param.
 #[component]
@@ -63,51 +86,38 @@ pub fn RepoDetailPage() -> impl IntoView {
           Some(c) => c,
           None => return,
         };
-        let params = IssueParams {
-          state: state_filter.get().as_str().into(),
-          labels: label_filter
-            .get()
-            .split(',')
-            .map(str::trim)
-            .filter(|s| !s.is_empty())
-            .map(str::to_string)
-            .collect(),
-          sort: sort_key.get().as_api_str().into(),
-          creator: author_filter.get(),
-          per_page: 30,
-        };
 
         let result = if let Some(url) = next_url {
-          // Fetch the next page directly via URL (avoids reconstructing params).
-          use gloo_net::http::Request;
-          let headers = client.auth_headers();
-          match Request::get(&url).headers(headers).send().await {
-            Ok(resp) => {
-              let status = resp.status();
-              let h = resp.headers();
-              let hm = github_api::client::headers_to_map(&h);
-              if !(200..300).contains(&status) {
-                // Best-effort error handling — silently stop pagination.
-                issues_loading.set(false);
-                return;
-              }
-              let body: Vec<Issue> = resp.json().await.unwrap_or_default();
-              let pagination = Pagination::from_headers(&hm);
+          let mut items = Vec::new();
+          match fetch_next_page(&client, &url, &mut items).await {
+            Some(next) => {
               rate_limit.update(&client);
-              // Filter PRs out.
-              let filtered: Vec<Issue> = body.into_iter().filter(|i| !i.is_pr()).collect();
-              (filtered, pagination)
+              // Filter PRs out — GitHub's issues endpoint returns PRs too.
+              items.retain(|i: &Issue| !i.is_pr());
+              (items, Pagination { next, last: None })
             }
-            Err(_) => {
+            None => {
               issues_loading.set(false);
               return;
             }
           }
         } else {
+          let params = IssueParams {
+            state: state_filter.get().as_str().into(),
+            labels: label_filter
+              .get()
+              .split(',')
+              .map(str::trim)
+              .filter(|s| !s.is_empty())
+              .map(str::to_string)
+              .collect(),
+            sort: sort_key.get().as_api_str().into(),
+            creator: author_filter.get(),
+            per_page: 30,
+          };
           match client.list_issues(&r.owner, &r.name, &params).await {
             Ok((mut v, p)) => {
               rate_limit.update(&client);
-              // Filter PRs out.
               v.retain(|i| !i.is_pr());
               (v, p)
             }
@@ -166,35 +176,25 @@ pub fn RepoDetailPage() -> impl IntoView {
           Some(c) => c,
           None => return,
         };
-        let params = PullParams {
-          state: state_filter.get().as_str().into(),
-          sort: sort_key.get().as_api_str().into(),
-          per_page: 30,
-        };
 
         let result = if let Some(url) = next_url {
-          use gloo_net::http::Request;
-          let headers = client.auth_headers();
-          match Request::get(&url).headers(headers).send().await {
-            Ok(resp) => {
-              let status = resp.status();
-              let h = resp.headers();
-              let hm = github_api::client::headers_to_map(&h);
-              if !(200..300).contains(&status) {
-                pulls_loading.set(false);
-                return;
-              }
-              let body: Vec<models::PullRequest> = resp.json().await.unwrap_or_default();
-              let pagination = Pagination::from_headers(&hm);
+          let mut items = Vec::new();
+          match fetch_next_page(&client, &url, &mut items).await {
+            Some(next) => {
               rate_limit.update(&client);
-              (body, pagination)
+              (items, Pagination { next, last: None })
             }
-            Err(_) => {
+            None => {
               pulls_loading.set(false);
               return;
             }
           }
         } else {
+          let params = PullParams {
+            state: state_filter.get().as_str().into(),
+            sort: sort_key.get().as_api_str().into(),
+            per_page: 30,
+          };
           match client.list_pulls(&r.owner, &r.name, &params).await {
             Ok((v, p)) => {
               rate_limit.update(&client);
@@ -243,7 +243,7 @@ pub fn RepoDetailPage() -> impl IntoView {
 
   let title = move || {
     let r = r#ref.get();
-    r.as_str()
+    r.to_string()
   };
 
   view! {

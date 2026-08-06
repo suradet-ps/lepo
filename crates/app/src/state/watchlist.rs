@@ -28,9 +28,15 @@ impl RepoRef {
     }
   }
 
-  /// Returns the canonical `owner/repo` form.
-  pub fn as_str(&self) -> String {
-    format!("{}/{}", self.owner, self.name)
+  /// Returns the GitHub URL for this repo.
+  pub fn github_url(&self) -> String {
+    format!("https://github.com/{self}")
+  }
+}
+
+impl std::fmt::Display for RepoRef {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}/{}", self.owner, self.name)
   }
 }
 
@@ -43,7 +49,7 @@ mod tests {
     let r = RepoRef::parse("rust-lang/rust").unwrap();
     assert_eq!(r.owner, "rust-lang");
     assert_eq!(r.name, "rust");
-    assert_eq!(r.as_str(), "rust-lang/rust");
+    assert_eq!(r.to_string(), "rust-lang/rust");
   }
 
   #[test]
