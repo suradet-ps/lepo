@@ -35,11 +35,17 @@ pub fn App() -> impl IntoView {
     }
   });
 
+  let (mobile_menu_open, set_mobile_menu_open) = signal(false);
+
   view! {
       <div class="app-shell" data-theme=move || settings.theme.get().as_attr()>
           <Router>
               {move || {
                   let location = use_location();
+                  // Close mobile menu on navigation
+                  let path = location.pathname.get();
+                  let _ = path; // subscription only
+                  set_mobile_menu_open.set(false);
                   view! {
                       <header class="primary-nav">
                           <div class="primary-nav-inner">
@@ -53,7 +59,17 @@ pub fn App() -> impl IntoView {
                                   </svg>
                                   "Lepo"
                               </a>
-                              <nav class="primary-nav-links">
+                              <button
+                                  class="nav-hamburger"
+                                  class:open=move || mobile_menu_open.get()
+                                  on:click=move |_| set_mobile_menu_open.update(|v| *v = !*v)
+                                  aria-label="Toggle navigation menu"
+                              >
+                                  <span class="nav-hamburger-bar"></span>
+                                  <span class="nav-hamburger-bar"></span>
+                                  <span class="nav-hamburger-bar"></span>
+                              </button>
+                              <nav class="primary-nav-links" class:open=move || mobile_menu_open.get()>
                                   <a
                                       href="/"
                                       class="nav-link"

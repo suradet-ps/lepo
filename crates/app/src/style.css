@@ -82,6 +82,13 @@
   /* Layout */
   --nav-height: 64px;
   --content-max: 1280px;
+
+  /* Breakpoints */
+  --breakpoint-mobile: 640px;
+  --breakpoint-tablet: 1024px;
+
+  /* Touch target minimum */
+  --touch-min: 44px;
 }
 
 /* Dark theme overrides */
@@ -231,6 +238,52 @@ a:hover {
   align-items: center;
   gap: var(--spacing-sm);
   padding-left: var(--spacing-md);
+}
+
+/* ---------- Hamburger button ---------- */
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rounded-sm);
+  color: var(--colors-ink);
+  transition: background 120ms ease;
+}
+.nav-hamburger:hover {
+  background: var(--colors-surface-card);
+}
+.nav-hamburger-bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+.nav-hamburger-bar + .nav-hamburger-bar {
+  margin-top: 5px;
+}
+/* Open state: X shape */
+.nav-hamburger.open .nav-hamburger-bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.nav-hamburger.open .nav-hamburger-bar:nth-child(2) {
+  opacity: 0;
+}
+.nav-hamburger.open .nav-hamburger-bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile nav dropdown */
+.nav-mobile-dropdown {
+  display: none;
 }
 
 .app-main {
@@ -1030,18 +1083,99 @@ a:hover {
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 768px) {
-  .app-main {
-    padding: var(--spacing-xl) var(--spacing-md) var(--spacing-section);
+
+/* Tablet: ≤ 1023px — show hamburger, compact layout */
+@media (max-width: 1023px) {
+  .nav-hamburger {
+    display: flex;
   }
-  .primary-nav {
+  .primary-nav-links {
+    display: none;
+  }
+  .primary-nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: var(--colors-canvas);
+    border-bottom: 1px solid var(--colors-hairline);
+    padding: var(--spacing-sm) var(--spacing-xl);
+    gap: var(--spacing-xxs);
+    z-index: 49;
+    box-shadow: var(--shadow-md);
+  }
+  .primary-nav-links.open .nav-link {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    min-height: var(--touch-min);
+    display: flex;
+    align-items: center;
+  }
+  .primary-nav-inner {
+    gap: var(--spacing-lg);
+  }
+}
+
+/* Mobile: ≤ 643px — force card view, single column, compact spacing */
+@media (max-width: 639px) {
+  .app-main {
+    padding: var(--spacing-lg) var(--spacing-md) var(--spacing-section);
+  }
+  .primary-nav-inner {
     padding: 0 var(--spacing-md);
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+  .primary-nav-brand {
+    font-size: 18px;
   }
   .repo-grid {
     grid-template-columns: 1fr;
   }
+  .summary-strip {
+    grid-template-columns: 1fr 1fr;
+  }
   .heading-lg {
-    font-size: 32px;
+    font-size: 20px;
+  }
+  .dash-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-toolbar .filters {
+    flex-direction: column;
+  }
+  .add-repo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  /* Force card view — hide table toggle and table */
+  .view-toggle {
+    display: none;
+  }
+  .repo-table-wrap {
+    display: none;
+  }
+}
+
+/* Touch target sizing — all interactive elements meet WCAG AA */
+@media (max-width: 1023px) {
+  .nav-link,
+  .filter-chip,
+  .button-primary,
+  .button-secondary,
+  .theme-toggle,
+  .theme-toggle,
+  .repo-card-ext {
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+  }
+  .text-input {
+    min-height: var(--touch-min);
   }
 }

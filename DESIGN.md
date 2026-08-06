@@ -222,6 +222,18 @@ by default.
 
 ## Layout
 
+### Breakpoints
+
+| Name | Range | Use |
+|---|---|---|
+| `{breakpoint.mobile}` | < 640px | Phone. Single column, card view forced, hamburger nav. |
+| `{breakpoint.tablet}` | 640px – 1023px | Small tablet / large phone. Two-column grids, compact nav. |
+| `{breakpoint.desktop}` | ≥ 1024px | Laptop and above. Full layout, table view available. |
+
+Breakpoints are defined as CSS custom properties
+(`--breakpoint-mobile`, `--breakpoint-tablet`, `--breakpoint-desktop`) and
+used exclusively via `@media (min-width)` or `@media (max-width)` queries.
+
 ### Grid
 
 - **Max width:** 1280px, centered.
@@ -229,11 +241,22 @@ by default.
 - **Repo cards:** `repeat(auto-fill, minmax(220px, 1fr))`.
 - **Settings:** `repeat(auto-fit, minmax(340px, 1fr))`.
 
+On mobile (< 640px): repo grid collapses to single column, summary strip
+stacks vertically, table is hidden in favor of card view.
+
 ### Navigation
 
 - Sticky top nav, 64px height, background `{colors-canvas}` with backdrop blur.
-- Left: logo + wordmark. Center: nav links. Right: theme toggle + rate badge.
+- Desktop (≥ 1024px): logo left, nav links center, theme toggle + rate badge right.
+- Tablet (640–1023px): logo + hamburger left, rate badge right, links in dropdown.
+- Mobile (< 640px): logo + hamburger left, theme toggle in dropdown.
 - 1px bottom border `{colors.hairline}`.
+
+### Touch Targets
+
+All interactive elements (buttons, links, inputs, toggles) meet WCAG AA
+minimum touch target size: **44 × 44px**. Elements smaller than 44px are
+padded to meet the minimum via `min-height` and `min-width`.
 
 ## Do's and Don'ts
 

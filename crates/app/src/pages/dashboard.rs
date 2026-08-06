@@ -43,7 +43,18 @@ pub fn DashboardPage() -> impl IntoView {
   let (add_error, set_add_error) = signal(Option::<String>::None);
 
   // View / filter / sort state.
-  let (view_mode, set_view_mode) = signal(ViewMode::Table);
+  // On mobile (< 640px), default to card view; otherwise table.
+  let is_mobile_view = web_sys::window().is_some_and(|w| {
+    w.inner_width()
+      .ok()
+      .and_then(|v| v.as_f64())
+      .is_some_and(|v| v < 640.0)
+  });
+  let (view_mode, set_view_mode) = signal(if is_mobile_view {
+    ViewMode::Cards
+  } else {
+    ViewMode::Table
+  });
   let (query, set_query) = signal(String::new());
   let (sort_key, set_sort_key) = signal(SortKey::Name);
   let (sort_asc, set_sort_asc) = signal(true);
