@@ -6,11 +6,13 @@ use github_api::{GithubApi, GithubClient, IssueParams, PullParams};
 use leptos::prelude::*;
 use leptos::reactive::callback::Callable;
 use leptos::server::LocalResource;
+use js_sys::wasm_bindgen::JsCast;
+use web_sys::wasm_bindgen::prelude::Closure;
 
 use models::{Issue, PullRequest, Repo, WorkflowRun};
 
 use crate::components::repo_card::{RepoCard, RepoCardData};
-use crate::state::{AuthState, RateLimitState, RepoRef, WatchlistState};
+use crate::state::{AuthState, RateLimitState, RepoRef, SettingsState, WatchlistState};
 
 /// Which dashboard display mode is active.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,6 +36,7 @@ pub fn DashboardPage() -> impl IntoView {
   let auth = expect_context::<AuthState>();
   let watchlist = expect_context::<WatchlistState>();
   let rate_limit = expect_context::<RateLimitState>();
+  let settings = expect_context::<SettingsState>();
 
   // Input box for adding a new repo reference.
   let (new_repo, set_new_repo) = signal(String::new());
@@ -47,6 +50,80 @@ pub fn DashboardPage() -> impl IntoView {
 
   // Tracks the success confirmation after a repo is added.
   let (add_success, set_add_success) = signal(Option::<String>::None);
+
+  // Auto-refresh: a version counter that triggers re-fetch when bumped.
+  let (refresh_version, set_refresh_version) = signal(0_u32);
+
+  // Wire the configured RefreshInterval to an actual timer.
+  // Uses Arc<AtomicI32> for the JS interval ID (Send+Sync for on_cleanup).
+  {
+    let auth = auth;
+    let settings = settings;
+    let rate_limit = rate_limit;
+    let set_refresh_version = set_refresh_version;
+
+    let current_id: std::sync::Arc<std::sync::atomic::AtomicI32> =
+      std::sync::Arc::new(std::sync::atomic::AtomicI32::new(0));
+
+    {
+      let current_id = current_id.clone();
+      Effect::new(move |_| {
+        let interval = settings.refresh_interval.get();
+
+        // Cancel the previous timer if any.
+        let old_id = current_id.swap(0, std::sync::atomic::Ordering::SeqCst);
+        if old_id != 0 {
+          if let Some(win) = web_sys::window() {
+            win.clear_interval_with_handle(old_id);
+          }
+        }
+
+        if let Some(seconds) = interval.seconds() {
+          // Pause auto-refresh when rate limit is nearly exhausted (< 10 remaining).
+          let should_pause = rate_limit
+            .limit
+            .get()
+            .map_or(false, |rl| rl.remaining < 10);
+
+          if !should_pause {
+            let millis = (seconds * 1000) as i32;
+            if let Some(win) = web_sys::window() {
+              let closure = Closure::wrap(Box::new(move || {
+                let has_token = auth.token.get().is_some();
+                let rate_ok = rate_limit
+                  .limit
+                  .get()
+                  .map_or(true, |rl| rl.remaining > 10);
+                if has_token && rate_ok {
+                  set_refresh_version.update(|v| *v += 1);
+                }
+              }) as Box<dyn FnMut()>);
+              if let Ok(id) = win.set_interval_with_callback_and_timeout_and_arguments_0(
+                closure.as_ref().unchecked_ref(),
+                millis,
+              ) {
+                closure.forget();
+                current_id.store(id, std::sync::atomic::Ordering::SeqCst);
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Cleanup: cancel the timer when the component is removed.
+    {
+      let current_id = current_id.clone();
+      on_cleanup(move || {
+        let id = current_id.load(std::sync::atomic::Ordering::SeqCst);
+        if id != 0 {
+          if let Some(win) = web_sys::window() {
+            win.clear_interval_with_handle(id);
+          }
+        }
+      });
+    }
+  }
 
   let add_repo = Action::new_local(move |input: &String| {
     let raw = input.trim().to_string();
@@ -74,11 +151,12 @@ pub fn DashboardPage() -> impl IntoView {
     }
   });
 
-  // A resource that re-fetches whenever the watchlist (or token) changes.
+  // A resource that re-fetches whenever the watchlist, token, or refresh timer changes.
   let bundles = LocalResource::new(move || {
     let auth = auth;
     let rate_limit = rate_limit;
     let watchlist = watchlist;
+    let _tick = refresh_version.get(); // re-fetch when auto-refresh fires
     async move {
       let repos = watchlist.repos.get();
       let client = match auth.client() {
