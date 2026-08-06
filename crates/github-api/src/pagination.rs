@@ -5,6 +5,7 @@
 //! the cursor instead of guessing page numbers (see AGENTS.md §3.6).
 
 use std::collections::HashMap;
+use std::fmt::Write;
 
 /// Query parameters accepted by `list_issues`.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -30,13 +31,13 @@ impl IssueParams {
       self.per_page
     );
     if !self.labels.is_empty() {
-      q.push_str(&format!("&labels={}", urlencode(&self.labels.join(","))));
+      let _ = write!(q, "&labels={}", urlencode(&self.labels.join(",")));
     }
     if !self.sort.is_empty() {
-      q.push_str(&format!("&sort={}", urlencode(&self.sort)));
+      let _ = write!(q, "&sort={}", urlencode(&self.sort));
     }
     if !self.creator.is_empty() {
-      q.push_str(&format!("&creator={}", urlencode(&self.creator)));
+      let _ = write!(q, "&creator={}", urlencode(&self.creator));
     }
     q
   }
@@ -62,7 +63,7 @@ impl PullParams {
       self.per_page
     );
     if !self.sort.is_empty() {
-      q.push_str(&format!("&sort={}", urlencode(&self.sort)));
+      let _ = write!(q, "&sort={}", urlencode(&self.sort));
     }
     q
   }
@@ -83,9 +84,9 @@ impl Pagination {
   /// The header looks like:
   /// `<https://api.github.com/...&page=2>; rel="next", <...>; rel="last"`.
   /// We only care about `rel="next"`.
-  pub fn parse(link_header: Option<&str>) -> Pagination {
+  pub fn parse(link_header: Option<&str>) -> Self {
     let Some(link) = link_header else {
-      return Pagination::default();
+      return Self::default();
     };
     let mut next = None;
     let mut last = None;
@@ -110,12 +111,12 @@ impl Pagination {
         _ => {}
       }
     }
-    Pagination { next, last }
+    Self { next, last }
   }
 
   /// Convenience for tests/headers coming as a map.
-  pub fn from_headers(headers: &HashMap<String, String>) -> Pagination {
-    Pagination::parse(headers.get("link").map(String::as_str))
+  pub fn from_headers(headers: &HashMap<String, String>) -> Self {
+    Self::parse(headers.get("link").map(String::as_str))
   }
 
   /// Extracts the total page count from the `last` URL's `page=` parameter.
@@ -141,7 +142,9 @@ fn urlencode(input: &str) -> String {
       b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
         out.push(byte as char);
       }
-      _ => out.push_str(&format!("%{byte:02X}")),
+      _ => {
+        let _ = write!(out, "%{byte:02X}");
+      }
     }
   }
   out
@@ -293,9 +296,10 @@ mod tests {
 
   #[test]
   fn from_headers_extracts_link() {
-    let h = headers(&[
-      ("link", "<https://api.github.com/repos/o/r/issues?page=2>; rel=\"next\""),
-    ]);
+    let h = headers(&[(
+      "link",
+      "<https://api.github.com/repos/o/r/issues?page=2>; rel=\"next\"",
+    )]);
     let p = Pagination::from_headers(&h);
     assert!(p.next.is_some());
   }

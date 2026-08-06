@@ -20,6 +20,6 @@ pub enum AppError {
 
 impl From<github_api::ApiError> for AppError {
   fn from(e: github_api::ApiError) -> Self {
-    AppError::Api(e.to_string())
+    Self::Api(e.to_string())
   }
 }

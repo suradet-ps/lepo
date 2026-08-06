@@ -49,8 +49,6 @@ pub fn RepoDetailPage() -> impl IntoView {
 
   // Fetches one page of issues. `next_url` is `None` for the first page.
   let fetch_issues = {
-    let auth = auth;
-    let rate_limit = rate_limit;
     move |next_url: Option<String>| {
       let auth = auth;
       let rate_limit = rate_limit;
@@ -83,16 +81,12 @@ pub fn RepoDetailPage() -> impl IntoView {
           // Fetch the next page directly via URL (avoids reconstructing params).
           use gloo_net::http::Request;
           let headers = client.auth_headers();
-          match Request::get(&url)
-            .headers(headers)
-            .send()
-            .await
-          {
+          match Request::get(&url).headers(headers).send().await {
             Ok(resp) => {
               let status = resp.status();
               let h = resp.headers();
               let hm = github_api::client::headers_to_map(&h);
-              if status < 200 || status >= 300 {
+              if !(200..300).contains(&status) {
                 // Best-effort error handling — silently stop pagination.
                 issues_loading.set(false);
                 return;
@@ -101,8 +95,7 @@ pub fn RepoDetailPage() -> impl IntoView {
               let pagination = Pagination::from_headers(&hm);
               rate_limit.update(&client);
               // Filter PRs out.
-              let filtered: Vec<Issue> =
-                body.into_iter().filter(|i| !i.is_pr()).collect();
+              let filtered: Vec<Issue> = body.into_iter().filter(|i| !i.is_pr()).collect();
               (filtered, pagination)
             }
             Err(_) => {
@@ -111,10 +104,7 @@ pub fn RepoDetailPage() -> impl IntoView {
             }
           }
         } else {
-          match client
-            .list_issues(&r.owner, &r.name, &params)
-            .await
-          {
+          match client.list_issues(&r.owner, &r.name, &params).await {
             Ok((mut v, p)) => {
               rate_limit.update(&client);
               // Filter PRs out.
@@ -164,8 +154,6 @@ pub fn RepoDetailPage() -> impl IntoView {
   let pulls_loading = RwSignal::new(false);
 
   let fetch_pulls = {
-    let auth = auth;
-    let rate_limit = rate_limit;
     move |next_url: Option<String>| {
       let auth = auth;
       let rate_limit = rate_limit;
@@ -187,21 +175,16 @@ pub fn RepoDetailPage() -> impl IntoView {
         let result = if let Some(url) = next_url {
           use gloo_net::http::Request;
           let headers = client.auth_headers();
-          match Request::get(&url)
-            .headers(headers)
-            .send()
-            .await
-          {
+          match Request::get(&url).headers(headers).send().await {
             Ok(resp) => {
               let status = resp.status();
               let h = resp.headers();
               let hm = github_api::client::headers_to_map(&h);
-              if status < 200 || status >= 300 {
+              if !(200..300).contains(&status) {
                 pulls_loading.set(false);
                 return;
               }
-              let body: Vec<models::PullRequest> =
-                resp.json().await.unwrap_or_default();
+              let body: Vec<models::PullRequest> = resp.json().await.unwrap_or_default();
               let pagination = Pagination::from_headers(&hm);
               rate_limit.update(&client);
               (body, pagination)
@@ -212,10 +195,7 @@ pub fn RepoDetailPage() -> impl IntoView {
             }
           }
         } else {
-          match client
-            .list_pulls(&r.owner, &r.name, &params)
-            .await
-          {
+          match client.list_pulls(&r.owner, &r.name, &params).await {
             Ok((v, p)) => {
               rate_limit.update(&client);
               (v, p)
@@ -378,7 +358,7 @@ pub fn RepoDetailPage() -> impl IntoView {
                                       }
                                       .into_any()
                                   } else {
-                                      view! {}.into_any()
+                                      ().into_any()
                                   }}
                               </div>
                           }
@@ -430,7 +410,7 @@ pub fn RepoDetailPage() -> impl IntoView {
                                       }
                                       .into_any()
                                   } else {
-                                      view! {}.into_any()
+                                      ().into_any()
                                   }}
                               </div>
                           }
@@ -463,11 +443,11 @@ enum StateFilter {
 }
 
 impl StateFilter {
-  fn as_str(self) -> &'static str {
+  const fn as_str(self) -> &'static str {
     match self {
-      StateFilter::Open => "open",
-      StateFilter::Closed => "closed",
-      StateFilter::All => "all",
+      Self::Open => "open",
+      Self::Closed => "closed",
+      Self::All => "all",
     }
   }
 }
@@ -481,11 +461,11 @@ enum SortKey {
 }
 
 impl SortKey {
-  fn as_api_str(self) -> &'static str {
+  const fn as_api_str(self) -> &'static str {
     match self {
-      SortKey::Updated => "updated",
-      SortKey::Created => "created",
-      SortKey::Comments => "comments",
+      Self::Updated => "updated",
+      Self::Created => "created",
+      Self::Comments => "comments",
     }
   }
 }

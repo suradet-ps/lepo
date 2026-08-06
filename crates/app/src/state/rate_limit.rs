@@ -17,8 +17,8 @@ pub struct RateLimitState {
 
 impl RateLimitState {
   /// Creates an empty (unknown) rate-limit state.
-  pub fn new() -> RateLimitState {
-    RateLimitState {
+  pub fn new() -> Self {
+    Self {
       limit: RwSignal::new(None),
       last_updated: RwSignal::new(None),
     }

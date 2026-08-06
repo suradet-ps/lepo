@@ -3,10 +3,10 @@
 
 use futures::future::join_all;
 use github_api::{GithubApi, GithubClient, IssueParams, PullParams};
+use js_sys::wasm_bindgen::JsCast;
 use leptos::prelude::*;
 use leptos::reactive::callback::Callable;
 use leptos::server::LocalResource;
-use js_sys::wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::prelude::Closure;
 
 use models::{Issue, PullRequest, Repo, WorkflowRun};
@@ -57,11 +57,6 @@ pub fn DashboardPage() -> impl IntoView {
   // Wire the configured RefreshInterval to an actual timer.
   // Uses Arc<AtomicI32> for the JS interval ID (Send+Sync for on_cleanup).
   {
-    let auth = auth;
-    let settings = settings;
-    let rate_limit = rate_limit;
-    let set_refresh_version = set_refresh_version;
-
     let current_id: std::sync::Arc<std::sync::atomic::AtomicI32> =
       std::sync::Arc::new(std::sync::atomic::AtomicI32::new(0));
 
@@ -72,28 +67,22 @@ pub fn DashboardPage() -> impl IntoView {
 
         // Cancel the previous timer if any.
         let old_id = current_id.swap(0, std::sync::atomic::Ordering::SeqCst);
-        if old_id != 0 {
-          if let Some(win) = web_sys::window() {
-            win.clear_interval_with_handle(old_id);
-          }
+        if old_id != 0
+          && let Some(win) = web_sys::window()
+        {
+          win.clear_interval_with_handle(old_id);
         }
 
         if let Some(seconds) = interval.seconds() {
           // Pause auto-refresh when rate limit is nearly exhausted (< 10 remaining).
-          let should_pause = rate_limit
-            .limit
-            .get()
-            .map_or(false, |rl| rl.remaining < 10);
+          let should_pause = rate_limit.limit.get().is_some_and(|rl| rl.remaining < 10);
 
           if !should_pause {
             let millis = (seconds * 1000) as i32;
             if let Some(win) = web_sys::window() {
               let closure = Closure::wrap(Box::new(move || {
                 let has_token = auth.token.get().is_some();
-                let rate_ok = rate_limit
-                  .limit
-                  .get()
-                  .map_or(true, |rl| rl.remaining > 10);
+                let rate_ok = rate_limit.limit.get().is_none_or(|rl| rl.remaining > 10);
                 if has_token && rate_ok {
                   set_refresh_version.update(|v| *v += 1);
                 }
@@ -112,17 +101,14 @@ pub fn DashboardPage() -> impl IntoView {
     }
 
     // Cleanup: cancel the timer when the component is removed.
-    {
-      let current_id = current_id.clone();
-      on_cleanup(move || {
-        let id = current_id.load(std::sync::atomic::Ordering::SeqCst);
-        if id != 0 {
-          if let Some(win) = web_sys::window() {
-            win.clear_interval_with_handle(id);
-          }
-        }
-      });
-    }
+    on_cleanup(move || {
+      let id = current_id.load(std::sync::atomic::Ordering::SeqCst);
+      if id != 0
+        && let Some(win) = web_sys::window()
+      {
+        win.clear_interval_with_handle(id);
+      }
+    });
   }
 
   let add_repo = Action::new_local(move |input: &String| {
@@ -219,8 +205,8 @@ pub fn DashboardPage() -> impl IntoView {
   let summary = Signal::derive(move || {
     let items = bundles.get().unwrap_or_default();
     let repos = items.len();
-    let issues: usize = items.iter().map(|d| d.open_issues()).sum();
-    let prs: usize = items.iter().map(|d| d.open_prs()).sum();
+    let issues: usize = items.iter().map(RepoCardData::open_issues).sum();
+    let prs: usize = items.iter().map(RepoCardData::open_prs).sum();
     (repos, issues, prs)
   });
 
@@ -371,10 +357,10 @@ pub fn DashboardPage() -> impl IntoView {
                               </div>
                               <div class="summary-item">
                                   <span class="summary-freshness">
-                                      {move || match fresh.clone() {
-                                          Some(ts) => format!("Updated {}", ts),
-                                          None => "Not yet synced".to_string(),
-                                      }}
+                                       {move || fresh.clone().map_or_else(
+                                           || "Not yet synced".to_string(),
+                                           |ts| format!("Updated {ts}"),
+                                       )}
                                   </span>
                                   <span class="summary-label">"Freshness"</span>
                               </div>
@@ -434,7 +420,7 @@ fn repo_table(
   let make_header = move || {
     let sk = sort_key;
     let sa = sort_asc;
-    let os = on_sort.clone();
+    let os = on_sort;
     move |key: SortKey, label: &'static str, num: bool| {
       let cls = if sk.get() == key {
         if sa.get() {
@@ -474,20 +460,17 @@ fn repo_table(
               <tbody>
                   {items
                       .iter()
-                      .cloned()
                       .map(|data| {
-                          let d = data.clone();
-                          let r = d.r#ref.clone();
-                          let (ci_dot, ci_label) = d.ci_badge();
-                          let ext = d
+                          let r = data.r#ref.clone();
+                          let (ci_dot, ci_label) = data.ci_badge();
+                          let ext = data
                               .repo
                               .as_ref()
-                              .map(|x| x.html_url.clone())
-                              .unwrap_or_else(|| format!("https://github.com/{}", r.as_str()));
-                          let open_issues = d.open_issues();
-                          let open_prs = d.open_prs();
-                          let stars = d.repo.as_ref().map(|x| x.stargazers_count).unwrap_or(0);
-                          let last_push = d.last_push_label();
+                              .map_or_else(|| format!("https://github.com/{}", r.as_str()), |x| x.html_url.clone());
+                          let open_issues = data.open_issues();
+                          let open_prs = data.open_prs();
+                          let stars = data.repo.as_ref().map_or(0, |x| x.stargazers_count);
+                          let last_push = data.last_push_label();
                           view! {
                               <tr>
                                   <td>
@@ -564,22 +547,16 @@ async fn fetch_bundle(
 
   let per_page = 30_usize;
 
-  let (issues_vec, issues_pagination) = issues.map(|(v, p)| (v, p)).unwrap_or_default();
-  let total_open_issues = if let Some(pages) = issues_pagination.total_pages() {
-    // Last page may have fewer items; approximate with per_page * (pages - 1) + 1..per_page.
-    // For the dashboard summary, we report the upper bound: per_page * pages.
-    per_page * pages as usize
-  } else {
-    // No pagination header → single page, count is exact.
-    issues_vec.iter().filter(|i| !i.is_pr()).count()
-  };
+  let (issues_vec, issues_pagination) = issues.unwrap_or_default();
+  let total_open_issues = issues_pagination.total_pages().map_or_else(
+    || issues_vec.iter().filter(|i| !i.is_pr()).count(),
+    |pages| per_page * pages as usize,
+  );
 
-  let (pulls_vec, pulls_pagination) = pulls.map(|(v, p)| (v, p)).unwrap_or_default();
-  let total_open_prs = if let Some(pages) = pulls_pagination.total_pages() {
-    per_page * pages as usize
-  } else {
-    pulls_vec.len()
-  };
+  let (pulls_vec, pulls_pagination) = pulls.unwrap_or_default();
+  let total_open_prs = pulls_pagination
+    .total_pages()
+    .map_or_else(|| pulls_vec.len(), |pages| per_page * pages as usize);
 
   (
     repo.ok(),
@@ -596,8 +573,7 @@ fn card_grid(items: Vec<RepoCardData>) -> impl IntoView {
   view! {
       <div class="repo-grid">
           {items
-              .iter()
-              .cloned()
+              .into_iter()
               .map(|data| view! { <RepoCard data/> })
               .collect_view()}
       </div>

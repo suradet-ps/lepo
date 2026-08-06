@@ -60,7 +60,7 @@ pub struct Issue {
 impl Issue {
   /// Returns `true` when this entry is actually a pull request (the GitHub
   /// API returns PRs inside the issues endpoint).
-  pub fn is_pr(&self) -> bool {
+  pub const fn is_pr(&self) -> bool {
     self.pull_request.is_some()
   }
 }

@@ -17,7 +17,7 @@ pub fn PrRow(pr: PullRequest) -> impl IntoView {
   let comments = pr.comments;
   let draft = pr.draft;
   let labels = pr.labels.clone();
-  let url = pr.html_url.clone();
+  let url = pr.html_url;
 
   view! {
       <a class="row row--pr" href=url target="_blank" rel="noopener noreferrer">

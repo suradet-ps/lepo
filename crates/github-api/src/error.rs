@@ -13,7 +13,12 @@ pub enum ApiError {
 
   /// GitHub returned a non-success status code.
   #[error("github returned {status}: {message}")]
-  Status { status: u16, message: String },
+  Status {
+    /// HTTP status code.
+    status: u16,
+    /// Error message from the API.
+    message: String,
+  },
 
   /// The token was rejected (401 / 403 auth failure).
   #[error("authentication failed: {0}")]
@@ -25,7 +30,10 @@ pub enum ApiError {
 
   /// The rate limit was exceeded (403 with rate-limit headers).
   #[error("rate limit exceeded; resets at unix {reset}")]
-  RateLimited { reset: u64 },
+  RateLimited {
+    /// Unix epoch seconds when the window resets.
+    reset: u64,
+  },
 }
 
 #[cfg(test)]

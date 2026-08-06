@@ -77,8 +77,8 @@ pub struct GithubClient {
 
 impl GithubClient {
   /// Creates a client authenticated with the given Personal Access Token.
-  pub fn new(token: impl Into<String>) -> GithubClient {
-    GithubClient {
+  pub fn new(token: impl Into<String>) -> Self {
+    Self {
       token: token.into(),
       rate_limit: std::sync::RwLock::new(None),
     }
@@ -205,6 +205,7 @@ impl GithubApi for GithubClient {
 }
 
 /// Maps an HTTP status into an [`ApiError`], consulting rate-limit headers.
+#[allow(clippy::implicit_hasher)]
 pub fn map_status(
   status: u16,
   headers: &HashMap<String, String>,

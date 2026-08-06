@@ -25,14 +25,13 @@ pub fn App() -> impl IntoView {
 
   // Reflect the theme onto the document root so `:root[data-theme]` CSS applies.
   let theme_attr = move || settings.theme.get().as_attr();
-  leptos::prelude::create_effect(move |_| {
+  leptos::prelude::Effect::new(move |_| {
     let value = theme_attr();
-    if let Some(win) = web_sys::window() {
-      if let Some(doc) = win.document() {
-        if let Some(root) = doc.document_element() {
-          let _ = root.set_attribute("data-theme", value);
-        }
-      }
+    if let Some(win) = web_sys::window()
+      && let Some(doc) = win.document()
+      && let Some(root) = doc.document_element()
+    {
+      let _ = root.set_attribute("data-theme", value);
     }
   });
 

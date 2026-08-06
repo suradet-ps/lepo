@@ -17,10 +17,10 @@ pub struct RepoRef {
 
 impl RepoRef {
   /// Parses an `owner/repo` string. Rejects anything without exactly one `/`.
-  pub fn parse(s: &str) -> Result<RepoRef, AppError> {
+  pub fn parse(s: &str) -> Result<Self, AppError> {
     let s = s.trim();
     match s.split_once('/') {
-      Some((owner, name)) if !owner.is_empty() && !name.is_empty() => Ok(RepoRef {
+      Some((owner, name)) if !owner.is_empty() && !name.is_empty() => Ok(Self {
         owner: owner.to_string(),
         name: name.to_string(),
       }),
@@ -67,9 +67,9 @@ pub struct WatchlistState {
 
 impl WatchlistState {
   /// Loads the watchlist from localStorage (empty if none/absent).
-  pub fn from_storage() -> WatchlistState {
+  pub fn from_storage() -> Self {
     let repos = storage::load_json::<Vec<RepoRef>>(storage::KEY_WATCHLIST).unwrap_or_default();
-    WatchlistState {
+    Self {
       repos: RwSignal::new(repos),
     }
   }
