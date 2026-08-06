@@ -1095,7 +1095,7 @@ a:hover {
   .primary-nav-links.open {
     display: flex;
     flex-direction: column;
-    position: absolute;
+    position: fixed;
     top: var(--nav-height);
     left: 0;
     right: 0;
@@ -1118,7 +1118,7 @@ a:hover {
   }
 }
 
-/* Mobile: ≤ 643px — force card view, single column, compact spacing */
+/* Mobile: ≤ 639px — force card view, single column, compact spacing */
 @media (max-width: 639px) {
   .app-main {
     padding: var(--spacing-lg) var(--spacing-md) var(--spacing-section);
@@ -1154,11 +1154,31 @@ a:hover {
     flex-direction: column;
     align-items: stretch;
   }
+  .add-repo .text-input {
+    flex: 1 1 auto;
+  }
   /* Force card view — hide table toggle and table */
   .view-toggle {
     display: none;
   }
   .repo-table-wrap {
+    display: none;
+  }
+  /* Settings grid: single column on mobile */
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+  /* Login page: reduce top margin on mobile */
+  .page-login {
+    margin-top: var(--spacing-xxl);
+  }
+  /* Theme toggle: 44px touch target */
+  .theme-toggle {
+    width: var(--touch-min);
+    height: var(--touch-min);
+  }
+  /* Rate limit badge: prevent overflow */
+  .rl-text {
     display: none;
   }
 }
@@ -1169,8 +1189,6 @@ a:hover {
   .filter-chip,
   .button-primary,
   .button-secondary,
-  .theme-toggle,
-  .theme-toggle,
   .repo-card-ext {
     min-height: var(--touch-min);
     min-width: var(--touch-min);
