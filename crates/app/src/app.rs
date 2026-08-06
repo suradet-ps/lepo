@@ -43,7 +43,10 @@ pub fn App() -> impl IntoView {
                   view! {
                       <header class="primary-nav">
                           <div class="primary-nav-inner">
-                              <a class="primary-nav-brand" href="/">"Lepo"</a>
+                              <a class="primary-nav-brand" href="/">
+                                  <img src="/favicon.svg" alt="" width="28" height="28"/>
+                                  "Lepo"
+                              </a>
                               <nav class="primary-nav-links">
                                   <a
                                       href="/"
