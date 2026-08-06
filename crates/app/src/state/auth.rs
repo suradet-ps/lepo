@@ -28,14 +28,14 @@ pub struct AuthState {
 
 impl AuthState {
   /// Builds an `AuthState` from any token found in localStorage.
-  pub fn from_storage() -> AuthState {
+  pub fn from_storage() -> Self {
     let token = storage::load_json::<String>(storage::KEY_TOKEN);
     let status = if token.is_some() {
       AuthStatus::LoggedIn(None)
     } else {
       AuthStatus::LoggedOut
     };
-    AuthState {
+    Self {
       token: RwSignal::new(token),
       status: RwSignal::new(status),
     }

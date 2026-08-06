@@ -13,8 +13,8 @@ pub fn now() -> DateTime<Utc> {
   {
     let millis = js_sys::Date::now();
     let secs = (millis / 1000.0) as i64;
-    let nanos = ((millis - (secs as f64) * 1000.0) * 1_000_000.0) as u32;
-    DateTime::from_timestamp(secs, nanos).unwrap_or_else(|| DateTime::UNIX_EPOCH)
+    let nanos = ((millis - (secs as f64).mul_add(1000.0, 0.0)) * 1_000_000.0) as u32;
+    DateTime::from_timestamp(secs, nanos).unwrap_or(DateTime::UNIX_EPOCH)
   }
   #[cfg(not(target_arch = "wasm32"))]
   {

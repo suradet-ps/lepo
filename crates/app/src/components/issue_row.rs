@@ -18,7 +18,7 @@ pub fn IssueRow(issue: Issue) -> impl IntoView {
     .unwrap_or_default();
   let comments = issue.comments;
   let labels = issue.labels.clone();
-  let url = issue.html_url.clone();
+  let url = issue.html_url;
 
   view! {
       <a class="row row--issue" href=url target="_blank" rel="noopener noreferrer">

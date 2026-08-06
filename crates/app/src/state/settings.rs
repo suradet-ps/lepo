@@ -21,12 +21,12 @@ pub enum RefreshInterval {
 impl RefreshInterval {
   /// Number of seconds between refreshes, or `None` for manual.
   #[allow(dead_code)]
-  pub fn seconds(&self) -> Option<u64> {
+  pub const fn seconds(self) -> Option<u64> {
     match self {
-      RefreshInterval::Manual => None,
-      RefreshInterval::Every1Min => Some(60),
-      RefreshInterval::Every5Min => Some(300),
-      RefreshInterval::Every15Min => Some(900),
+      Self::Manual => None,
+      Self::Every1Min => Some(60),
+      Self::Every5Min => Some(300),
+      Self::Every15Min => Some(900),
     }
   }
 }
@@ -42,10 +42,10 @@ pub enum Theme {
 
 impl Theme {
   /// The value used for the `data-theme` attribute on the app root.
-  pub fn as_attr(self) -> &'static str {
+  pub const fn as_attr(self) -> &'static str {
     match self {
-      Theme::Light => "light",
-      Theme::Dark => "dark",
+      Self::Light => "light",
+      Self::Dark => "dark",
     }
   }
 }
@@ -61,11 +61,11 @@ pub struct SettingsState {
 
 impl SettingsState {
   /// Loads settings from localStorage, falling back to defaults.
-  pub fn from_storage() -> SettingsState {
+  pub fn from_storage() -> Self {
     let refresh_interval = storage::load_json::<RefreshInterval>(storage::KEY_REFRESH_INTERVAL)
       .unwrap_or(RefreshInterval::Manual);
     let theme = storage::load_json::<Theme>(storage::KEY_THEME).unwrap_or(Theme::Light);
-    SettingsState {
+    Self {
       refresh_interval: RwSignal::new(refresh_interval),
       theme: RwSignal::new(theme),
     }

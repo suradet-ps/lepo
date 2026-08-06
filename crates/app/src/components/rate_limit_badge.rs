@@ -15,13 +15,15 @@ pub fn RateLimitBadge() -> impl IntoView {
   let rate = expect_context::<RateLimitState>();
 
   let meter = move || {
-    let (level, text, title) = match rate.limit.get() {
-      None => (
-        "rl-meter-unknown".to_string(),
-        "API limit ?".to_string(),
-        String::new(),
-      ),
-      Some(rl) => {
+    let (level, text, title) = rate.limit.get().map_or_else(
+      || {
+        (
+          "rl-meter-unknown".to_string(),
+          "API limit ?".to_string(),
+          String::new(),
+        )
+      },
+      |rl| {
         let pct = rl.fraction_remaining();
         let level = if rl.remaining == 0 || pct < 0.1 {
           "rl-meter-red".to_string()
@@ -36,7 +38,7 @@ pub fn RateLimitBadge() -> impl IntoView {
           if delta <= 0 {
             "resets now".to_string()
           } else if delta < 60 {
-            format!("resets in {}s", delta)
+            format!("resets in {delta}s")
           } else if delta < 3600 {
             format!("resets in {}m", delta / 60)
           } else {
@@ -50,8 +52,8 @@ pub fn RateLimitBadge() -> impl IntoView {
           rl.remaining, rl.limit, reset_label
         );
         (level, format!("{} left", rl.remaining), title)
-      }
-    };
+      },
+    );
     view! {
       <span class=level title=title>
         <span class="rl-dot"></span>

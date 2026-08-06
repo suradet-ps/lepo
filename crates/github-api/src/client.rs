@@ -24,7 +24,7 @@ const API_VERSION: &str = "2022-11-28";
 pub(crate) type HeaderCapture<'a> = Box<dyn Fn(&Headers) + Send + Sync + 'a>;
 
 /// Converts gloo-net `Headers` into a plain `HashMap` for easier inspection.
-pub(crate) fn headers_to_map(headers: &Headers) -> HashMap<String, String> {
+pub fn headers_to_map(headers: &Headers) -> HashMap<String, String> {
   headers.entries().collect()
 }
 
@@ -77,15 +77,15 @@ pub struct GithubClient {
 
 impl GithubClient {
   /// Creates a client authenticated with the given Personal Access Token.
-  pub fn new(token: impl Into<String>) -> GithubClient {
-    GithubClient {
+  pub fn new(token: impl Into<String>) -> Self {
+    Self {
       token: token.into(),
       rate_limit: std::sync::RwLock::new(None),
     }
   }
 
   /// Builds the standard GitHub API headers for an authenticated request.
-  fn auth_headers(&self) -> Headers {
+  pub fn auth_headers(&self) -> Headers {
     let h = Headers::new();
     h.set("Authorization", &format!("Bearer {}", self.token));
     h.set("Accept", "application/vnd.github+json");
@@ -205,7 +205,8 @@ impl GithubApi for GithubClient {
 }
 
 /// Maps an HTTP status into an [`ApiError`], consulting rate-limit headers.
-pub(crate) fn map_status(
+#[allow(clippy::implicit_hasher)]
+pub fn map_status(
   status: u16,
   headers: &HashMap<String, String>,
   not_found_msg: &str,
@@ -250,4 +251,83 @@ struct LimitPair {
   limit: u32,
   remaining: u32,
   reset: u64,
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use std::collections::HashMap;
+
+  fn headers(pairs: &[(&str, &str)]) -> HashMap<String, String> {
+    pairs
+      .iter()
+      .map(|(k, v)| (k.to_string(), v.to_string()))
+      .collect()
+  }
+
+  #[test]
+  fn map_status_ok_range() {
+    assert!(map_status(200, &headers(&[]), "not found").is_ok());
+    assert!(map_status(201, &headers(&[]), "not found").is_ok());
+    assert!(map_status(299, &headers(&[]), "not found").is_ok());
+  }
+
+  #[test]
+  fn map_status_401_no_rate_limit_is_auth_error() {
+    let result = map_status(401, &headers(&[]), "not found");
+    match result {
+      Err(ApiError::Auth(msg)) => assert!(msg.contains("token rejected")),
+      _ => panic!("expected Auth error"),
+    }
+  }
+
+  #[test]
+  fn map_status_403_no_rate_limit_is_auth_error() {
+    let result = map_status(403, &headers(&[]), "not found");
+    match result {
+      Err(ApiError::Auth(msg)) => assert!(msg.contains("forbidden")),
+      _ => panic!("expected Auth error"),
+    }
+  }
+
+  #[test]
+  fn map_status_403_with_zero_remaining_is_rate_limited() {
+    let h = headers(&[
+      ("x-ratelimit-remaining", "0"),
+      ("x-ratelimit-limit", "60"),
+      ("x-ratelimit-reset", "1700000000"),
+    ]);
+    let result = map_status(403, &h, "not found");
+    match result {
+      Err(ApiError::RateLimited { reset }) => assert_eq!(reset, 1700000000),
+      _ => panic!("expected RateLimited error"),
+    }
+  }
+
+  #[test]
+  fn map_status_404_is_not_found() {
+    let result = map_status(404, &headers(&[]), "repo missing");
+    match result {
+      Err(ApiError::NotFound(msg)) => assert_eq!(msg, "repo missing"),
+      _ => panic!("expected NotFound error"),
+    }
+  }
+
+  #[test]
+  fn map_status_500_is_unexpected_status() {
+    let result = map_status(500, &headers(&[]), "not found");
+    match result {
+      Err(ApiError::Status { status, .. }) => assert_eq!(status, 500),
+      _ => panic!("expected Status error"),
+    }
+  }
+
+  #[test]
+  fn map_status_422_is_unexpected_status() {
+    let result = map_status(422, &headers(&[]), "not found");
+    match result {
+      Err(ApiError::Status { status, .. }) => assert_eq!(status, 422),
+      _ => panic!("expected Status error"),
+    }
+  }
 }

@@ -24,11 +24,8 @@ pub enum WorkflowStatus {
 
 impl WorkflowStatus {
   /// Returns `true` when the run is in a non-terminal, active state.
-  pub fn is_active(&self) -> bool {
-    matches!(
-      self,
-      WorkflowStatus::InProgress | WorkflowStatus::Queued | WorkflowStatus::Requested
-    )
+  pub const fn is_active(&self) -> bool {
+    matches!(self, Self::InProgress | Self::Queued | Self::Requested)
   }
 }
 

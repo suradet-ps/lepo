@@ -7,7 +7,7 @@ use models::{Issue, PullRequest, Repo, WorkflowConclusion, WorkflowRun, Workflow
 use crate::state::RepoRef;
 
 /// Data needed to render a [`RepoCard`].
-#[derive(Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct RepoCardData {
   /// The repo reference.
   pub r#ref: RepoRef,
@@ -19,17 +19,31 @@ pub struct RepoCardData {
   pub pulls: Vec<PullRequest>,
   /// Latest CI status (most recent workflow run), if any.
   pub ci: Option<WorkflowRun>,
+  /// Total number of open issues across all pages (0 = use `issues.len()`).
+  #[serde(default)]
+  pub total_open_issues: usize,
+  /// Total number of open PRs across all pages (0 = use `pulls.len()`).
+  #[serde(default)]
+  pub total_open_prs: usize,
 }
 
 impl RepoCardData {
-  /// Open issues excluding pull requests.
+  /// Open issues excluding pull requests. Uses the total count when available.
   pub fn open_issues(&self) -> usize {
-    self.issues.iter().filter(|i| !i.is_pr()).count()
+    if self.total_open_issues > 0 {
+      self.total_open_issues
+    } else {
+      self.issues.iter().filter(|i| !i.is_pr()).count()
+    }
   }
 
-  /// Open pull requests.
-  pub fn open_prs(&self) -> usize {
-    self.pulls.len()
+  /// Open pull requests. Uses the total count when available.
+  pub const fn open_prs(&self) -> usize {
+    if self.total_open_prs > 0 {
+      self.total_open_prs
+    } else {
+      self.pulls.len()
+    }
   }
 
   /// Human-readable "last push" label from the repo metadata.
@@ -38,15 +52,15 @@ impl RepoCardData {
       .repo
       .as_ref()
       .and_then(|r| r.pushed_at.as_ref())
-      .map(format_relative)
-      .unwrap_or_else(|| "—".to_string())
+      .map_or_else(|| "—".to_string(), format_relative)
   }
 
   /// CI status as a (dot-class, label) pair for the badge.
   pub fn ci_badge(&self) -> (&'static str, &'static str) {
-    match &self.ci {
-      None => ("ci-dot--none", "—"),
-      Some(run) => match run.status {
+    self
+      .ci
+      .as_ref()
+      .map_or(("ci-dot--none", "—"), |run| match run.status {
         WorkflowStatus::Completed => match run.conclusion {
           Some(WorkflowConclusion::Success) => ("ci-dot--pass", "Pass"),
           Some(WorkflowConclusion::Failure) => ("ci-dot--fail", "Fail"),
@@ -61,8 +75,7 @@ impl RepoCardData {
         }
         WorkflowStatus::Cancelled => ("ci-dot--run", "Cancel"),
         WorkflowStatus::Other => ("ci-dot--none", "—"),
-      },
-    }
+      })
   }
 }
 
@@ -89,8 +102,8 @@ fn format_relative(ts: &chrono::DateTime<chrono::Utc>) -> String {
 pub fn RepoCard(data: RepoCardData) -> impl IntoView {
   let open_issues = data.issues.iter().filter(|i| !i.is_pr()).count();
   let open_prs = data.pulls.len();
-  let stars = data.repo.as_ref().map(|r| r.stargazers_count).unwrap_or(0);
-  let forks = data.repo.as_ref().map(|r| r.forks_count).unwrap_or(0);
+  let stars = data.repo.as_ref().map_or(0, |r| r.stargazers_count);
+  let forks = data.repo.as_ref().map_or(0, |r| r.forks_count);
   let ref_str = data.r#ref.as_str();
   let ref_str_clone = ref_str.clone();
 
@@ -105,8 +118,7 @@ pub fn RepoCard(data: RepoCardData) -> impl IntoView {
                   href=data
                       .repo
                       .as_ref()
-                      .map(|r| r.html_url.clone())
-                      .unwrap_or_else(|| format!("https://github.com/{}", ref_str_clone))
+                      .map_or_else(|| format!("https://github.com/{ref_str_clone}"), |r| r.html_url.clone())
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Open on GitHub"

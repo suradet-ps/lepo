@@ -22,11 +22,11 @@ pub struct RateLimit {
 impl RateLimit {
   /// Builds a [`RateLimit`] from a header map, reading the `x-ratelimit-*`
   /// keys. Returns `Ok` only when all three headers are present and parse.
-  pub fn from_headers(headers: &HashMap<String, String>) -> Option<RateLimit> {
+  pub fn from_headers(headers: &HashMap<String, String>) -> Option<Self> {
     let remaining = headers.get("x-ratelimit-remaining")?.parse().ok()?;
     let limit = headers.get("x-ratelimit-limit")?.parse().ok()?;
     let reset = headers.get("x-ratelimit-reset")?.parse().ok()?;
-    Some(RateLimit {
+    Some(Self {
       remaining,
       limit,
       reset,
