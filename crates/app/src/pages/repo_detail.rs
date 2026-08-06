@@ -87,9 +87,9 @@ pub fn RepoDetailPage() -> impl IntoView {
           None => return,
         };
 
-        let result = if let Some(url) = next_url {
+        let result = if let Some(ref url) = next_url {
           let mut items = Vec::new();
-          match fetch_next_page(&client, &url, &mut items).await {
+          match fetch_next_page(&client, url, &mut items).await {
             Some(next) => {
               rate_limit.update(&client);
               // Filter PRs out — GitHub's issues endpoint returns PRs too.
@@ -129,7 +129,11 @@ pub fn RepoDetailPage() -> impl IntoView {
         };
 
         let (items, pagination) = result;
-        issues_items.update(|v| v.extend(items));
+        if next_url.is_none() {
+          issues_items.set(items);
+        } else {
+          issues_items.update(|v| v.extend(items));
+        }
         issues_next.set(pagination.next);
         issues_loading.set(false);
       }
@@ -138,7 +142,6 @@ pub fn RepoDetailPage() -> impl IntoView {
 
   // Trigger initial fetch when the issues tab becomes active.
   // Watch for tab changes and reset + fetch when switching to Issues.
-  let issues_fetched = RwSignal::new(false);
   Effect::new(move |_| {
     let current_tab = tab.get();
     let _state = state_filter.get();
@@ -146,14 +149,9 @@ pub fn RepoDetailPage() -> impl IntoView {
     let _author = author_filter.get();
     let _sort = sort_key.get();
     if current_tab == Tab::Issues {
-      // Reset and re-fetch on any filter change.
-      issues_items.set(Vec::new());
-      issues_next.set(None);
-      issues_fetched.set(false);
       issues_loading.set(true);
       let fut = fetch_issues(None);
       spawn_local(fut);
-      issues_fetched.set(true);
     }
   });
 
@@ -177,9 +175,9 @@ pub fn RepoDetailPage() -> impl IntoView {
           None => return,
         };
 
-        let result = if let Some(url) = next_url {
+        let result = if let Some(ref url) = next_url {
           let mut items = Vec::new();
-          match fetch_next_page(&client, &url, &mut items).await {
+          match fetch_next_page(&client, url, &mut items).await {
             Some(next) => {
               rate_limit.update(&client);
               (items, Pagination { next, last: None })
@@ -208,7 +206,11 @@ pub fn RepoDetailPage() -> impl IntoView {
         };
 
         let (items, pagination) = result;
-        pulls_items.update(|v| v.extend(items));
+        if next_url.is_none() {
+          pulls_items.set(items);
+        } else {
+          pulls_items.update(|v| v.extend(items));
+        }
         pulls_next.set(pagination.next);
         pulls_loading.set(false);
       }
@@ -216,28 +218,14 @@ pub fn RepoDetailPage() -> impl IntoView {
   };
 
   // Trigger initial fetch when the pulls tab becomes active.
-  let pulls_fetched = RwSignal::new(false);
   Effect::new(move |_| {
     let current_tab = tab.get();
     let _state = state_filter.get();
     let _sort = sort_key.get();
-    if current_tab == Tab::Pulls && !pulls_fetched.get() {
-      pulls_items.set(Vec::new());
-      pulls_next.set(None);
+    if current_tab == Tab::Pulls {
       pulls_loading.set(true);
       let fut = fetch_pulls(None);
       spawn_local(fut);
-      pulls_fetched.set(true);
-    }
-  });
-
-  // Reset pulls cache when switching away from pulls tab.
-  Effect::new(move |_| {
-    let current_tab = tab.get();
-    if current_tab == Tab::Issues && pulls_fetched.get() {
-      pulls_fetched.set(false);
-      pulls_items.set(Vec::new());
-      pulls_next.set(None);
     }
   });
 
