@@ -128,15 +128,17 @@ enforced); both themes render from tokens alone.~~ ✅ All items complete.
 Most developers check dashboards on desktop, but a quick phone check should
 work too.
 
-- [ ] **Breakpoint system.** Mobile, tablet, desktop-small, desktop.
-- [ ] **Table → card fallback.** The sortable table is unusable on small
-  screens. Force card view below tablet width.
-- [ ] **Responsive navigation.** Top nav on desktop; collapsed menu on
-  mobile.
-- [ ] **Touch targets.** All interactive elements meet WCAG AA sizing.
+- [x] **Breakpoint system.** Mobile (< 640px), tablet (640–1023px),
+  desktop (≥ 1024px). Defined as CSS custom properties.
+- [x] **Table → card fallback.** Card view forced on mobile; table and toggle
+  hidden. Dashboard defaults to card view when viewport < 640px.
+- [x] **Responsive navigation.** Hamburger menu on tablet/mobile with animated
+  X transition. Full-width dropdown. Auto-closes on navigation.
+- [x] **Touch targets.** All interactive elements meet WCAG AA 44×44px
+  minimum on tablet and mobile.
 
 **Acceptance:** usable from phone to ultrawide; table auto-converts to
-cards on mobile.
+cards on mobile; hamburger nav works; touch targets meet WCAG AA.
 
 ### 5. Keyboard navigation
 
