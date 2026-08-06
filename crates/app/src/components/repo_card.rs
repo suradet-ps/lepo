@@ -19,17 +19,31 @@ pub struct RepoCardData {
   pub pulls: Vec<PullRequest>,
   /// Latest CI status (most recent workflow run), if any.
   pub ci: Option<WorkflowRun>,
+  /// Total number of open issues across all pages (0 = use `issues.len()`).
+  #[serde(default)]
+  pub total_open_issues: usize,
+  /// Total number of open PRs across all pages (0 = use `pulls.len()`).
+  #[serde(default)]
+  pub total_open_prs: usize,
 }
 
 impl RepoCardData {
-  /// Open issues excluding pull requests.
+  /// Open issues excluding pull requests. Uses the total count when available.
   pub fn open_issues(&self) -> usize {
-    self.issues.iter().filter(|i| !i.is_pr()).count()
+    if self.total_open_issues > 0 {
+      self.total_open_issues
+    } else {
+      self.issues.iter().filter(|i| !i.is_pr()).count()
+    }
   }
 
-  /// Open pull requests.
+  /// Open pull requests. Uses the total count when available.
   pub fn open_prs(&self) -> usize {
-    self.pulls.len()
+    if self.total_open_prs > 0 {
+      self.total_open_prs
+    } else {
+      self.pulls.len()
+    }
   }
 
   /// Human-readable "last push" label from the repo metadata.

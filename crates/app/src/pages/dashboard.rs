@@ -93,13 +93,17 @@ pub fn DashboardPage() -> impl IntoView {
         .await
         .into_iter()
         .enumerate()
-        .map(|(i, (repo, issues, pulls, ci))| RepoCardData {
-          r#ref: repos[i].clone(),
-          repo,
-          issues,
-          pulls,
-          ci,
-        })
+        .map(
+          |(i, (repo, issues, pulls, ci, total_issues, total_prs))| RepoCardData {
+            r#ref: repos[i].clone(),
+            repo,
+            issues,
+            pulls,
+            ci,
+            total_open_issues: total_issues,
+            total_open_prs: total_prs,
+          },
+        )
         .collect();
       rate_limit.update(&client);
       out
@@ -447,6 +451,9 @@ fn repo_table(
 /// Fetches metadata, issues, pulls, and latest CI run for one repo,
 /// tolerating partial failure on any single piece. The four sub-requests run
 /// concurrently so a single repo's bundle costs ~1 round-trip of latency.
+///
+/// Returns the card data including total open-issue and open-PR counts derived
+/// from the `Link` header pagination (see `Pagination::total_pages`).
 async fn fetch_bundle(
   client: &GithubClient,
   r: &RepoRef,
@@ -455,6 +462,8 @@ async fn fetch_bundle(
   Vec<Issue>,
   Vec<PullRequest>,
   Option<WorkflowRun>,
+  usize,
+  usize,
 ) {
   let repo_fut = client.get_repo(&r.owner, &r.name);
   let issue_params = IssueParams {
@@ -474,11 +483,32 @@ async fn fetch_bundle(
 
   let (repo, issues, pulls, ci) = futures::join!(repo_fut, issues_fut, pulls_fut, ci_fut,);
 
+  let per_page = 30_usize;
+
+  let (issues_vec, issues_pagination) = issues.map(|(v, p)| (v, p)).unwrap_or_default();
+  let total_open_issues = if let Some(pages) = issues_pagination.total_pages() {
+    // Last page may have fewer items; approximate with per_page * (pages - 1) + 1..per_page.
+    // For the dashboard summary, we report the upper bound: per_page * pages.
+    per_page * pages as usize
+  } else {
+    // No pagination header → single page, count is exact.
+    issues_vec.iter().filter(|i| !i.is_pr()).count()
+  };
+
+  let (pulls_vec, pulls_pagination) = pulls.map(|(v, p)| (v, p)).unwrap_or_default();
+  let total_open_prs = if let Some(pages) = pulls_pagination.total_pages() {
+    per_page * pages as usize
+  } else {
+    pulls_vec.len()
+  };
+
   (
     repo.ok(),
-    issues.map(|(v, _)| v).unwrap_or_default(),
-    pulls.map(|(v, _)| v).unwrap_or_default(),
+    issues_vec,
+    pulls_vec,
     ci.ok().flatten(),
+    total_open_issues,
+    total_open_prs,
   )
 }
 

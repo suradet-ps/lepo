@@ -68,6 +68,8 @@ impl PullParams {
 pub struct Pagination {
   /// Absolute URL of the next page, if any.
   pub next: Option<String>,
+  /// Absolute URL of the last page, if any.
+  pub last: Option<String>,
 }
 
 impl Pagination {
@@ -80,8 +82,9 @@ impl Pagination {
     let Some(link) = link_header else {
       return Pagination::default();
     };
+    let mut next = None;
+    let mut last = None;
     for part in link.split(',') {
-      // Each part: <url>; rel="next"
       let mut url = None;
       let mut rel = None;
       for seg in part.split(';') {
@@ -96,18 +99,32 @@ impl Pagination {
           rel = Some(val.trim().trim_matches('"').to_string());
         }
       }
-      if rel.as_deref() == Some("next")
-        && let Some(u) = url
-      {
-        return Pagination { next: Some(u) };
+      match rel.as_deref() {
+        Some("next") if url.is_some() => next = url,
+        Some("last") if url.is_some() => last = url,
+        _ => {}
       }
     }
-    Pagination::default()
+    Pagination { next, last }
   }
 
   /// Convenience for tests/headers coming as a map.
   pub fn from_headers(headers: &HashMap<String, String>) -> Pagination {
     Pagination::parse(headers.get("link").map(String::as_str))
+  }
+
+  /// Extracts the total page count from the `last` URL's `page=` parameter.
+  /// Returns `None` when there is no `last` link or the page number cannot be
+  /// parsed.
+  pub fn total_pages(&self) -> Option<u32> {
+    let last_url = self.last.as_ref()?;
+    let page_str = last_url
+      .split('?')
+      .nth(1)?
+      .split('&')
+      .find(|p| p.starts_with("page="))?
+      .strip_prefix("page=")?;
+    page_str.parse().ok()
   }
 }
 
@@ -140,15 +157,52 @@ mod tests {
   }
 
   #[test]
+  fn parse_finds_last_rel() {
+    let header = "<https://api.github.com/repos/o/r/issues?page=2>; rel=\"next\", <https://api.github.com/repos/o/r/issues?page=5>; rel=\"last\"";
+    let p = Pagination::parse(Some(header));
+    assert_eq!(
+      p.last.as_deref(),
+      Some("https://api.github.com/repos/o/r/issues?page=5")
+    );
+  }
+
+  #[test]
   fn parse_no_next_returns_none() {
     let header = "<https://api.github.com/repos/o/r/issues?page=5>; rel=\"last\"";
     let p = Pagination::parse(Some(header));
     assert_eq!(p.next, None);
+    assert!(p.last.is_some());
   }
 
   #[test]
   fn parse_missing_header_is_default() {
-    assert_eq!(Pagination::parse(None), Pagination::default());
+    let p = Pagination::parse(None);
+    assert_eq!(p.next, None);
+    assert_eq!(p.last, None);
+  }
+
+  #[test]
+  fn total_pages_from_last_url() {
+    let p = Pagination {
+      next: Some("https://api.github.com/repos/o/r/issues?page=2".into()),
+      last: Some("https://api.github.com/repos/o/r/issues?page=5".into()),
+    };
+    assert_eq!(p.total_pages(), Some(5));
+  }
+
+  #[test]
+  fn total_pages_none_when_no_last() {
+    let p = Pagination::default();
+    assert_eq!(p.total_pages(), None);
+  }
+
+  #[test]
+  fn total_pages_none_when_unparseable() {
+    let p = Pagination {
+      last: Some("https://api.github.com/repos/o/r/issues".into()),
+      ..Default::default()
+    };
+    assert_eq!(p.total_pages(), None);
   }
 
   #[test]
