@@ -24,7 +24,7 @@ const API_VERSION: &str = "2022-11-28";
 pub(crate) type HeaderCapture<'a> = Box<dyn Fn(&Headers) + Send + Sync + 'a>;
 
 /// Converts gloo-net `Headers` into a plain `HashMap` for easier inspection.
-pub(crate) fn headers_to_map(headers: &Headers) -> HashMap<String, String> {
+pub fn headers_to_map(headers: &Headers) -> HashMap<String, String> {
   headers.entries().collect()
 }
 
@@ -85,7 +85,7 @@ impl GithubClient {
   }
 
   /// Builds the standard GitHub API headers for an authenticated request.
-  fn auth_headers(&self) -> Headers {
+  pub fn auth_headers(&self) -> Headers {
     let h = Headers::new();
     h.set("Authorization", &format!("Bearer {}", self.token));
     h.set("Accept", "application/vnd.github+json");

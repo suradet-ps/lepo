@@ -15,6 +15,8 @@ pub struct IssueParams {
   pub labels: Vec<String>,
   /// Sort key: `created`, `updated`, or `comments`.
   pub sort: String,
+  /// Filter by author (GitHub `creator` param).
+  pub creator: String,
   /// Page size.
   pub per_page: u8,
 }
@@ -32,6 +34,9 @@ impl IssueParams {
     }
     if !self.sort.is_empty() {
       q.push_str(&format!("&sort={}", urlencode(&self.sort)));
+    }
+    if !self.creator.is_empty() {
+      q.push_str(&format!("&creator={}", urlencode(&self.creator)));
     }
     q
   }
@@ -211,6 +216,7 @@ mod tests {
       state: "open".into(),
       labels: vec!["bug".into(), "urgent".into()],
       sort: "comments".into(),
+      creator: "alice".into(),
       per_page: 30,
     };
     let q = p.to_query();
@@ -218,6 +224,7 @@ mod tests {
     assert!(q.contains("per_page=30"));
     assert!(q.contains("labels=bug%2Curgent") || q.contains("labels=bug,urgent"));
     assert!(q.contains("sort=comments"));
+    assert!(q.contains("creator=alice"));
   }
 
   #[test]

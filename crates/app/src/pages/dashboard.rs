@@ -470,6 +470,7 @@ async fn fetch_bundle(
     state: "open".into(),
     labels: vec![],
     sort: String::new(),
+    creator: String::new(),
     per_page: 30,
   };
   let issues_fut = client.list_issues(&r.owner, &r.name, &issue_params);
