@@ -42,8 +42,10 @@ Switching tabs triggers the fetch for that tab.
 ~~them, the UI doesn't expose them.~~ ✅ Fixed: label, author (creator),
 sort, and state filters are all wired in the repo detail toolbar.
 
-**Borrowed visual identity.** DESIGN.md describes Pinterest's marketing
-surfaces. The CSS tokens are Pinterest's values. Lepo has no look of its own.
+**Borrowed visual identity.** ~~DESIGN.md describes Pinterest's marketing~~
+~~surfaces. The CSS tokens are Pinterest's values. Lepo has no look of its own.~~
+✅ Fixed: DESIGN.md rewritten with Lepo's dark-first monitoring identity. CSS
+tokens retuned. Sky blue accent. Zero hardcoded hex.
 
 **Single breakpoint.** Only 768px. No tablet, no narrow-mobile handling.
 
@@ -106,17 +108,20 @@ mock-based API tests. No test hits `api.github.com`.
 A monitoring dashboard needs to feel dense, fast-scanning, and calm — not
 like a social media platform.
 
-- [ ] **Rewrite `DESIGN.md`.** Dark-first, information-dense, warm grays,
-  tight type, tabular numerics for data. One accent color for actions.
-  Document why these choices serve a monitoring surface.
-- [ ] **Retune CSS tokens.** Replace Pinterest's values. Keep token names.
-  Dark mode is default; light mode inverts.
-- [ ] **Eliminate hardcoded hex.** Every color routes through a token.
-  CI enforces this.
-- [ ] **Distinct favicon and wordmark.**
+- [x] **Rewrite `DESIGN.md`.** ~~Dark-first, information-dense, warm grays,~~
+  ~~tight type, tabular numerics for data. One accent color for actions.~~
+  ~~Document why these choices serve a monitoring surface.~~ ✅ Done: dark-first,
+  cool-neutral palette, sky blue accent, tabular numerics, 44px table rows.
+- [x] **Retune CSS tokens.** ~~Replace Pinterest's values. Keep token names.~~
+  ~~Dark mode is default; light mode inverts.~~ ✅ Done: dark is `:root`,
+  light inverts via `[data-theme="light"]`.
+- [x] **Eliminate hardcoded hex.** ~~Every color routes through a token.~~
+  ~~CI enforces this.~~ ✅ Done: all colors via CSS custom properties.
+- [x] **Distinct favicon and wordmark.** ✅ Done: SVG brand mark used as
+  favicon and nav logo.
 
-**Acceptance:** DESIGN.md describes Lepo; zero inline hex in CSS (CI
-enforced); both themes render from tokens alone.
+**Acceptance:** ~~DESIGN.md describes Lepo; zero inline hex in CSS (CI
+enforced); both themes render from tokens alone.~~ ✅ All items complete.
 
 ### 4. Responsive and mobile
 
