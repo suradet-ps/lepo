@@ -87,9 +87,9 @@ pub fn RepoDetailPage() -> impl IntoView {
           None => return,
         };
 
-        let result = if let Some(url) = next_url {
+        let result = if let Some(ref url) = next_url {
           let mut items = Vec::new();
-          match fetch_next_page(&client, &url, &mut items).await {
+          match fetch_next_page(&client, url, &mut items).await {
             Some(next) => {
               rate_limit.update(&client);
               // Filter PRs out — GitHub's issues endpoint returns PRs too.
@@ -129,7 +129,11 @@ pub fn RepoDetailPage() -> impl IntoView {
         };
 
         let (items, pagination) = result;
-        issues_items.update(|v| v.extend(items));
+        if next_url.is_none() {
+          issues_items.set(items);
+        } else {
+          issues_items.update(|v| v.extend(items));
+        }
         issues_next.set(pagination.next);
         issues_loading.set(false);
       }
@@ -138,7 +142,6 @@ pub fn RepoDetailPage() -> impl IntoView {
 
   // Trigger initial fetch when the issues tab becomes active.
   // Watch for tab changes and reset + fetch when switching to Issues.
-  let issues_fetched = RwSignal::new(false);
   Effect::new(move |_| {
     let current_tab = tab.get();
     let _state = state_filter.get();
@@ -146,14 +149,9 @@ pub fn RepoDetailPage() -> impl IntoView {
     let _author = author_filter.get();
     let _sort = sort_key.get();
     if current_tab == Tab::Issues {
-      // Reset and re-fetch on any filter change.
-      issues_items.set(Vec::new());
-      issues_next.set(None);
-      issues_fetched.set(false);
       issues_loading.set(true);
       let fut = fetch_issues(None);
       spawn_local(fut);
-      issues_fetched.set(true);
     }
   });
 
@@ -177,9 +175,9 @@ pub fn RepoDetailPage() -> impl IntoView {
           None => return,
         };
 
-        let result = if let Some(url) = next_url {
+        let result = if let Some(ref url) = next_url {
           let mut items = Vec::new();
-          match fetch_next_page(&client, &url, &mut items).await {
+          match fetch_next_page(&client, url, &mut items).await {
             Some(next) => {
               rate_limit.update(&client);
               (items, Pagination { next, last: None })
@@ -208,7 +206,11 @@ pub fn RepoDetailPage() -> impl IntoView {
         };
 
         let (items, pagination) = result;
-        pulls_items.update(|v| v.extend(items));
+        if next_url.is_none() {
+          pulls_items.set(items);
+        } else {
+          pulls_items.update(|v| v.extend(items));
+        }
         pulls_next.set(pagination.next);
         pulls_loading.set(false);
       }
@@ -216,28 +218,14 @@ pub fn RepoDetailPage() -> impl IntoView {
   };
 
   // Trigger initial fetch when the pulls tab becomes active.
-  let pulls_fetched = RwSignal::new(false);
   Effect::new(move |_| {
     let current_tab = tab.get();
     let _state = state_filter.get();
     let _sort = sort_key.get();
-    if current_tab == Tab::Pulls && !pulls_fetched.get() {
-      pulls_items.set(Vec::new());
-      pulls_next.set(None);
+    if current_tab == Tab::Pulls {
       pulls_loading.set(true);
       let fut = fetch_pulls(None);
       spawn_local(fut);
-      pulls_fetched.set(true);
-    }
-  });
-
-  // Reset pulls cache when switching away from pulls tab.
-  Effect::new(move |_| {
-    let current_tab = tab.get();
-    if current_tab == Tab::Issues && pulls_fetched.get() {
-      pulls_fetched.set(false);
-      pulls_items.set(Vec::new());
-      pulls_next.set(None);
     }
   });
 
@@ -326,48 +314,61 @@ pub fn RepoDetailPage() -> impl IntoView {
                   let empty = items.is_empty();
                   let loading = issues_loading.get();
                   let has_more = issues_next.get().is_some();
-                  view! {
-                      <Show
-                          when=move || empty && !loading
-                          fallback=move || view! {
-                              <div class="row-list">
-                                  {items
-                                      .iter()
-                                      .cloned()
-                                      .map(|i| view! { <IssueRow issue=i/> })
-                                      .collect_view()}
-                                  {if has_more {
-                                      view! {
-                                          <button
-                                              class="button-secondary load-more"
-                                              disabled=move || loading
-                                              on:click=move |_| {
-                                                  issues_loading.set(true);
-                                                  let fut = fetch_issues(issues_next.get());
-                                                  spawn_local(fut);
+                  if loading && empty {
+                      view! {
+                          <div class="row-list">
+                              {(0..5).map(|_| view! {
+                                  <div class="row row--issue row-skeleton">
+                                      <span class="row-num"><span class="skeleton skeleton-line" style="width:36px"></span></span>
+                                      <span class="row-title"><span class="skeleton skeleton-line"></span></span>
+                                      <span class="row-labels"><span class="skeleton skeleton-line" style="width:60px"></span></span>
+                                      <span class="row-author"><span class="skeleton skeleton-line" style="width:64px"></span></span>
+                                      <span class="row-comments"><span class="skeleton skeleton-line" style="width:50px"></span></span>
+                                  </div>
+                              }).collect_view()}
+                          </div>
+                      }.into_any()
+                  } else if !empty {
+                      view! {
+                          <div class="row-list">
+                              {items
+                                  .iter()
+                                  .cloned()
+                                  .map(|i| view! { <IssueRow issue=i/> })
+                                  .collect_view()}
+                              {if has_more {
+                                  view! {
+                                      <button
+                                          class="button-secondary load-more"
+                                          disabled=move || loading
+                                          on:click=move |_| {
+                                              issues_loading.set(true);
+                                              let fut = fetch_issues(issues_next.get());
+                                              spawn_local(fut);
+                                          }
+                                      >
+                                          {move || {
+                                              if loading {
+                                                  view! { <span class="button-spinner"></span> "Loading…" }.into_any()
+                                              } else {
+                                                  "Load more".into_any()
                                               }
-                                          >
-                                              {move || {
-                                                  if loading {
-                                                      "Loading…"
-                                                  } else {
-                                                      "Load more"
-                                                  }
-                                              }}
-                                          </button>
-                                      }
-                                      .into_any()
-                                  } else {
-                                      ().into_any()
-                                  }}
-                              </div>
-                          }
-                      >
+                                          }}
+                                      </button>
+                                  }
+                                  .into_any()
+                              } else {
+                                  ().into_any()
+                              }}
+                          </div>
+                      }.into_any()
+                  } else {
+                      view! {
                           <div class="empty-state">
                               <p class="body-strong">"No issues"</p>
                               <p class="body-sm">"This repository has no issues matching the current filter."</p>
                           </div>
-                      </Show>
+                      }.into_any()
                   }
               }}
           </Show>
@@ -378,48 +379,61 @@ pub fn RepoDetailPage() -> impl IntoView {
                   let empty = items.is_empty();
                   let loading = pulls_loading.get();
                   let has_more = pulls_next.get().is_some();
-                  view! {
-                      <Show
-                          when=move || empty && !loading
-                          fallback=move || view! {
-                              <div class="row-list">
-                                  {items
-                                      .iter()
-                                      .cloned()
-                                      .map(|p| view! { <PrRow pr=p/> })
-                                      .collect_view()}
-                                  {if has_more {
-                                      view! {
-                                          <button
-                                              class="button-secondary load-more"
-                                              disabled=move || loading
-                                              on:click=move |_| {
-                                                  pulls_loading.set(true);
-                                                  let fut = fetch_pulls(pulls_next.get());
-                                                  spawn_local(fut);
+                  if loading && empty {
+                      view! {
+                          <div class="row-list">
+                              {(0..5).map(|_| view! {
+                                  <div class="row row--pr row-skeleton">
+                                      <span class="row-num"><span class="skeleton skeleton-line" style="width:36px"></span></span>
+                                      <span class="row-title"><span class="skeleton skeleton-line"></span></span>
+                                      <span class="row-labels"><span class="skeleton skeleton-line" style="width:60px"></span></span>
+                                      <span class="row-author"><span class="skeleton skeleton-line" style="width:64px"></span></span>
+                                      <span class="row-comments"><span class="skeleton skeleton-line" style="width:50px"></span></span>
+                                  </div>
+                              }).collect_view()}
+                          </div>
+                      }.into_any()
+                  } else if !empty {
+                      view! {
+                          <div class="row-list">
+                              {items
+                                  .iter()
+                                  .cloned()
+                                  .map(|p| view! { <PrRow pr=p/> })
+                                  .collect_view()}
+                              {if has_more {
+                                  view! {
+                                      <button
+                                          class="button-secondary load-more"
+                                          disabled=move || loading
+                                          on:click=move |_| {
+                                              pulls_loading.set(true);
+                                              let fut = fetch_pulls(pulls_next.get());
+                                              spawn_local(fut);
+                                          }
+                                      >
+                                          {move || {
+                                              if loading {
+                                                  view! { <span class="button-spinner"></span> "Loading…" }.into_any()
+                                              } else {
+                                                  "Load more".into_any()
                                               }
-                                          >
-                                              {move || {
-                                                  if loading {
-                                                      "Loading…"
-                                                  } else {
-                                                      "Load more"
-                                                  }
-                                              }}
-                                          </button>
-                                      }
-                                      .into_any()
-                                  } else {
-                                      ().into_any()
-                                  }}
-                              </div>
-                          }
-                      >
+                                          }}
+                                      </button>
+                                  }
+                                  .into_any()
+                              } else {
+                                  ().into_any()
+                              }}
+                          </div>
+                      }.into_any()
+                  } else {
+                      view! {
                           <div class="empty-state">
                               <p class="body-strong">"No pull requests"</p>
                               <p class="body-sm">"This repository has no open pull requests."</p>
                           </div>
-                      </Show>
+                      }.into_any()
                   }
               }}
           </Show>

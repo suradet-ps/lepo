@@ -55,10 +55,15 @@ pub fn TokenForm() -> impl IntoView {
            />
            <button
                class="button-primary"
+               class:button-loading=move || pending.get()
                on:click=move |_| { submit.dispatch(token.get()); }
                disabled=move || pending.get()
            >
-              {move || if pending.get() { "Validating…" } else { "Save token" }}
+              {move || if pending.get() {
+                  view! { <span class="button-spinner"></span> "Validating…" }.into_any()
+              } else {
+                  "Save token".into_any()
+              }}
           </button>
           {move || {
               error

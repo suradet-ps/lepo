@@ -1,352 +1,268 @@
-## Overview
+# Lepo Design System
 
-Pinterest's marketing system is built around a single instructional principle: get out of the photograph's way. The chrome is a quiet warm-cream neutral palette (`{colors.surface-soft}`, `{colors.surface-card}`, `{colors.canvas}`) carrying typography in Pinterest's proprietary Pin Sans face, with Pinterest Red (`{colors.primary}` — `#e60023`) reserved exclusively for the "Sign up" CTA, the active-tab indicator, and the sticky top-nav anchor. Every other surface is allowed to fade behind the imagery — pin tiles, category tiles, content thumbnails, profile shots — that constitutes the actual product.
+Lepo is a monitoring dashboard. It watches many GitHub repositories and surfaces
+the signal — open issues, failing CI, stale PRs — without noise. The design
+system serves that job: dense, scannable, calm.
 
-The design system has two distinct surface modes that alternate down the home page: the **hero/CTA chrome** (cream surfaces, large 70px Pin Sans display headlines, alternating left/right photo-illustrated feature cards) and the **content masonry** (a column-based grid of 16px-radius pin cards on `{colors.surface-card}` with no internal padding — the pin is the card). The search results page is almost pure masonry: a tight column grid of pin imagery in mixed aspect ratios, with a small filter-chip strip at the top and the sticky red Sign-up CTA in the upper-right corner. The `create.pinterest.com` business surface inverts the grid back to a more traditional editorial layout but keeps every other rule of the system: Pin Sans, cream chrome, red CTA, 16px-radius pills.
+## Design Principles
 
-The system's signature gesture is **shape geometry**: 16px radius (`{rounded.md}`) for nearly every surface — buttons, inputs, pin cards, feature cards — and 32px radius (`{rounded.lg}`) reserved for pin-card-large and modal cards. There are exactly three radius values in active use: 16px, 32px, and pill (9999px). The system never goes flat (sharp corners) and never goes radius-medium — those two values are the entire shape vocabulary.
-
-**Key Characteristics:**
-- Single-accent CTA: Pinterest Red (`{colors.primary}`) carries every primary action; everything else is monochrome
-- Pin Sans proprietary typography across every text role from `{typography.display-xl}` (70px) down to `{typography.caption-sm}` (12px) — no serif, no monospace anywhere
-- Two-radius shape system: `{rounded.md}` (16px) for most components, `{rounded.lg}` (32px) for large cards and modals, `{rounded.full}` for circular elements
-- Masonry pin grid as the load-bearing visual element — column-based layout where each pin's natural aspect ratio is preserved
-- Warm-cream neutral chrome (`{colors.surface-card}` — #f6f6f3) that softly recedes behind imagery without competing
-- Sticky top nav with the always-red Sign-up CTA anchored in the upper-right at every breakpoint
-- Modal overlay (login/signup) using a soft scrim over the page content rather than a navigation jump
+1. **Warm and readable.** A cream-tinted light palette reduces harsh contrast
+   while keeping text crisp. Dark mode uses warm near-blacks for the same feel.
+2. **Information density first.** Every pixel carries data. Tight spacing, small
+   type, tabular numerics. The user scans dozens of repos in seconds — the
+   design must not slow them down.
+3. **One accent for actions.** Pinterest Red (`{colors.primary}`) is the only
+   interactive accent. It marks links, active states, and CTAs. Everything else
+   is neutral.
+4. **Status colors are semantic, not decorative.** Green = pass. Red = fail or
+   error. Amber = in progress or warning. These never appear as background fills
+   or decorative tints — only as dots, text, and thin borders.
+5. **No chrome that doesn't earn its space.** No drop shadows on cards. No
+   gradients. No decorative borders. Flat surfaces, hairline dividers, and
+   spacing do the work.
 
 ## Colors
 
-> **Source pages:** `/` (home), `/search/pins/?q=bold lip` (search results), `create.pinterest.com/` (creator marketing), `create.pinterest.com/product-features/how-to-create-boards/` (creator article). The chrome palette is identical across all four pages.
-
 ### Brand & Accent
-- **Pinterest Red** (`{colors.primary}` — `#e60023`): the brand's only highly-saturated color. Sign-up CTAs, sticky top-nav anchor, active state in tab strips, and the brand wordmark.
-- **Pinterest Red Pressed** (`{colors.primary-pressed}` — `#cc001f`): pressed state for the primary button — a single notch deeper than brand red.
 
-### Surface
-- **Canvas** (`{colors.canvas}` — `#ffffff`): true white. The base surface for the primary nav, modals, feature cards, and content body.
-- **Soft Surface** (`{colors.surface-soft}` — `#fbfbf9`): faintly cream-tinted off-white used for the page body wash on the home page hero.
-- **Surface Card** (`{colors.surface-card}` — `#f6f6f3`): warm-cream card and pin-tile background. Carries category tiles, search-bar default fill, button-secondary default, and pin-card backgrounds.
-- **Secondary BG** (`{colors.secondary-bg}` — `#e5e5e0`): the gray-cream used for `{component.button-secondary}` ("I already have an account") fill — a notch deeper than `{colors.surface-card}`.
-- **Secondary Pressed** (`{colors.secondary-pressed}` — `#c8c8c1`): pressed state for the secondary button.
-- **Surface Dark** (`{colors.surface-dark}` — `#262622`): warm near-black used in the rare dark CTA strip on `create.pinterest.com`.
-- **Hairline** (`{colors.hairline}` — `#dadad3`): 1px row dividers, footer column rules.
-- **Hairline Soft** (`{colors.hairline-soft}` — `#e5e5e0`): lighter inline divider; doubles as the secondary-button background.
+- **Primary** (`{colors.primary}` — `#e60023`): Pinterest Red. Links, active
+  tab indicator, primary button background. The single interactive accent.
+- **Primary Pressed** (`{colors.primary-pressed}` — `#cc001f`): pressed state
+  for the primary button.
+- **Primary Muted** (`{colors.primary-muted}` — `rgba(230, 0, 35, 0.08)`):
+  tinted background for active chips and hover fills.
+
+### Surface (Light Mode Default)
+
+- **Canvas** (`{colors.canvas}` — `#ffffff`): true white. Base surface for
+  nav, modals, feature cards, content body.
+- **Surface** (`{colors.surface}` — `#fbfbf9`): faintly cream-tinted
+  off-white used for the page body wash.
+- **Surface Card** (`{colors.surface-card}` — `#f6f6f3`): warm-cream card and
+  tile background.
+- **Surface Hover** (`{colors.surface-hover}` — `#ededf0`): hover state for
+  interactive surfaces.
+- **Secondary BG** (`{colors.secondary-bg}` — `#e5e5e0`): gray-cream for
+  secondary button fill.
+- **Secondary Pressed** (`{colors.secondary-pressed}` — `#c8c8c1`): pressed
+  state for secondary button.
+- **Hairline** (`{colors.hairline}` — `#dadad3`): 1px row dividers, card
+  borders.
+- **Hairline Soft** (`{colors.hairline-soft}` — `#e5e5e0`): lighter inline
+  divider.
 
 ### Text
-- **Ink** (`{colors.ink}` — `#000000`): primary headlines, button text, primary nav links.
-- **Ink Soft** (`{colors.ink-soft}` — `#211922`): inline-link color in body prose. The brand's only "color" beyond Pinterest Red used in chrome — a near-black with a faint warm cast.
-- **Body** (`{colors.body}` — `#33332e`): default paragraph text on `{colors.canvas}`.
-- **Charcoal** (`{colors.charcoal}` — `#262622`): subtly softer body where pure ink is too heavy.
-- **Mute** (`{colors.mute}` — `#62625b`): metadata text, footer links, secondary captions.
-- **Ash** (`{colors.ash}` — `#91918c`): disabled button text, placeholder text in inputs.
-- **Stone** (`{colors.stone}` — `#c8c8c1`): least-emphasis utility text, disabled-state borders.
-- **On Dark** (`{colors.on-dark}` — `#ffffff`): primary text on `{colors.surface-dark}`.
+
+- **Ink** (`{colors.ink}` — `#000000`): primary headlines, button text, nav
+  links.
+- **Ink Soft** (`{colors.ink-soft}` — `#211922`): inline-link color in body
+  prose.
+- **Body** (`{colors.body}` — `#33332e`): default paragraph text.
+- **Charcoal** (`{colors.charcoal}` — `#262622`): softer body where pure ink
+  is too heavy.
+- **Mute** (`{colors.mute}` — `#62625b`): metadata, timestamps, secondary
+  captions.
+- **Ash** (`{colors.ash}` — `#91918c`): disabled button text, placeholder
+  text.
+- **Stone** (`{colors.stone}` — `#c8c8c1`): least-emphasis utility text.
+- **On Dark** (`{colors.on-dark}` — `#ffffff`): text on dark surfaces.
+- **On Primary** (`{colors.on-primary}` — `#ffffff`): text on primary button.
+- **On Secondary** (`{colors.on-secondary}` — `#000000`): text on secondary
+  button.
 
 ### Semantic
-- **Error** (`{colors.error}` — `#9e0a0a`): validation messages, destructive confirmation copy.
-- **Error Deep** (`{colors.error-deep}` — `#cc001f`): deepened error background where the regular error tone needs more contrast. Note: this matches the primary-pressed value but in error context represents semantic destructiveness.
-- **Success Deep** (`{colors.success-deep}` — `#103c25`): in-product success messaging.
-- **Success Pale** (`{colors.success-pale}` — `#c7f0da`): pale success-pill background.
-- **Focus Outer** (`{colors.focus-outer}` — `#435ee5`): the system's focus-ring blue — appears as a 2px outer outline around focused inputs and buttons.
-- **Focus Inner** (`{colors.focus-inner}` — `#ffffff`): white inner gap inside the focus-ring stack.
 
-### Editorial Accents (used sparingly inside content imagery and category badges)
-- **Accent Pressed Blue** (`{colors.accent-pressed-blue}` — `#617bff`): pressed state for blue informational badges and editorial pin chips.
-- **Accent Purple** (`{colors.accent-purple}` — `#7e238b`): editorial recommendation badge, in-product "Pinterest Predicts" callout.
-- **Accent Purple Deep** (`{colors.accent-purple-deep}` — `#6845ab`): paired dark for purple lockups and "Performance+" iconography.
+- **Error** (`{colors.error}` — `#9e0a0a`): validation messages, destructive
+  actions.
+- **Error Deep** (`{colors.error-deep}` — `#cc001f`): deepened error
+  background.
+- **Success** (`{colors.success}` — `#1a7f37`): CI passing, positive status.
+- **Success Deep** (`{colors.success-deep}` — `#103c25`): success messaging.
+- **Success Pale** (`{colors.success-pale}` — `#c7f0da`): success pill
+  background.
+- **Warning** (`{colors.warning}` — `#bf8700`): in-progress CI, caution.
+- **Focus** (`{colors.focus}` — `#435ee5`): focus ring blue.
+
+### Dark Mode
+
+Dark mode inverts the surface hierarchy. Token names stay the same; values
+change to warm near-blacks (`#1b1b18` canvas, `#242420` card) with inverted
+text. Semantic colors adjust lightness for contrast on dark surfaces.
 
 ## Typography
 
 ### Font Family
-**Pin Sans** is Pinterest's proprietary geometric sans-serif used across every text role on every page. It carries weights 400 (regular), 500 (medium), 600 (semibold), and 700 (bold), and falls back through a long stack — `-apple-system` → `system-ui` → `Segoe UI` → `Roboto` → `Helvetica Neue` → `Arial` plus emoji fallbacks. The face's distinctive trait is its tight letter-spacing at display sizes (-1.2px on `{typography.display-xl}` and `{typography.heading-xl}`), which gives 70px headlines a confident, friendly density rather than the airy spread of more conventional display geometric sans faces.
+
+**Inter** — a variable geometric sans-serif optimized for screens. Weights 400
+(regular), 500 (medium), 600 (semibold), 700 (bold). Fallback:
+`-apple-system` → `system-ui` → `Segoe UI` → `Roboto` → `Helvetica Neue` →
+`Arial`.
 
 ### Hierarchy
 
-| Token | Size | Weight | Line Height | Letter Spacing | Use |
-|---|---|---|---|---|---|
-| `{typography.display-xl}` | 70px | 600 | 1.1 | -1.2px | Marketing hero headline ("Create the life you love on Pinterest") |
-| `{typography.display-lg}` | 44px | 700 | 1.15 | -0.8px | "Where your content can thrive" creator hero |
-| `{typography.heading-xl}` | 28px | 700 | 1.2 | -1.2px | Section heading ("Bring your favorite ideas to life", "Pinterest for your brand") |
-| `{typography.heading-lg}` | 22px | 600 | 1.25 | 0 | Sub-section heading, modal title ("Welcome to Pinterest") |
-| `{typography.heading-md}` | 18px | 600 | 1.3 | 0 | Card title, in-grid pin label |
-| `{typography.body-md}` | 16px | 400 | 1.4 | 0 | Body copy, modal body, default paragraph |
-| `{typography.body-strong}` | 16px | 600 | 1.4 | 0 | Inline emphasis, primary nav link, form label |
-| `{typography.body-sm}` | 14px | 400 | 1.4 | 0 | Footer copy, in-grid pin metadata, helper text |
-| `{typography.body-sm-strong}` | 14px | 700 | 1.4 | 0 | Search-result count label, table-header text |
-| `{typography.caption-md}` | 12px | 500 | 1.5 | 0 | Caption text, link metadata |
-| `{typography.caption-sm}` | 12px | 400 | 1.4 | 0 | Smallest utility text, copyright |
-| `{typography.link-md}` | 16px | 600 | 1.4 | 0 | Inline anchor link in body prose |
-| `{typography.button-md}` | 14px | 700 | 1 | 0 | Standard primary/secondary button label |
-| `{typography.button-sm}` | 12px | 700 | 1 | 0 | Compact pill chip, in-card button |
+| Token | Size | Weight | Line Height | Use |
+|---|---|---|---|---|
+| `{typography.heading-lg}` | 22px | 700 | 1.25 | Page titles, section headings |
+| `{typography.heading}` | 20px | 600 | 1.3 | Sub-section headings |
+| `{typography.body-md}` | 16px | 400 | 1.4 | Body copy, default paragraph |
+| `{typography.body-strong}` | 14px | 600 | 1.5 | Emphasis, repo names, nav links |
+| `{typography.body}` | 14px | 400 | 1.5 | Secondary body text |
+| `{typography.small}` | 12px | 400 | 1.4 | Metadata, timestamps, captions |
+| `{typography.small-strong}` | 12px | 600 | 1.4 | Table headers, stat labels |
+| `{typography.caption-md}` | 12px | 500 | 1.5 | Caption text, link metadata |
+| `{typography.mono}` | 13px | 400 | 1.4 | Tabular numerics, issue numbers |
+| `{typography.button-md}` | 14px | 700 | 1 | Button labels |
+| `{typography.button-sm}` | 12px | 700 | 1 | Chip text, compact buttons |
 
 ### Principles
-The system has an unusually steep size jump between display and body — `{typography.display-xl}` (70px) drops directly to `{typography.body-md}` (16px) on the home hero with no intermediate tier between. The negative tracking on the largest tiers (-1.2px / -0.8px) creates a tighter, more confident headline than a default geometric sans would deliver, and the body copy sits at a generous 1.4 line-height to keep multi-line descriptions breathing.
 
-### Note on Font Substitutes
-Pin Sans is proprietary. The closest open-source substitute is **Inter** (weights 400 / 500 / 600 / 700) — its geometry, x-height, and metric balance match Pin Sans within ~3% at body sizes. **Manrope** is a strong secondary substitute for the display tier where slightly tighter letterspacing helps the 70px headline feel weighted. Apply -1.2px tracking on the substitute at display sizes regardless of which substitute is chosen.
+- **Tabular numerics** (`font-variant-numeric: tabular-nums`) on every number
+  in a column: issue counts, PR counts, star counts, rate-limit remaining.
+- **Tight tracking** on headings (-0.4px to -0.8px) for a dense, confident
+  feel.
+- **Generous line-height** on body text (1.4–1.5) for readability.
 
-## Layout
+## Spacing
 
-### Spacing System
-- **Base unit:** 8px (with finer 4/6/7px steps available for tight inline gaps in pill buttons and chips).
-- **Tokens (front matter):** `{spacing.xxs}` (4px) · `{spacing.xs}` (6px) · `{spacing.sm}` (8px) · `{spacing.md}` (12px) · `{spacing.lg}` (16px) · `{spacing.xl}` (24px) · `{spacing.xxl}` (32px) · `{spacing.section}` (64px).
-- **Universal section rhythm:** every page in the set uses `{spacing.section}` (64px) as the vertical gap between major content blocks. Pin grids use `{spacing.sm}` (8px) gutters between tiles — the tightest grid gutter in the system, designed so imagery effectively touches across columns.
-- **Modal padding:** `{component.modal-card}` uses 32px internal padding (`{spacing.xxl}`) on all sides.
-
-### Grid & Container
-- **Max width:** ~1280px content area at desktop with 24px gutters (~48px at ultrawide).
-- **Pin masonry grid:** auto-fitting column-based layout — 5–6 columns at ultrawide, 4 columns at desktop, 3 at tablet, 2 at mobile-landscape, 1 at mobile. Each tile preserves its natural aspect ratio (square / 2:3 / 3:4 / 4:5 portrait — never landscape because pins are vertically-oriented). Gutters are `{spacing.sm}` (8px) horizontal and vertical.
-- **Home hero feature row:** asymmetric 2-column split where text and imagery alternate left/right down the page (text-left + image-right, then image-left + text-right, etc.).
-- **Footer:** 4-column link grid at desktop, collapsing to 2-up at tablet, 1-up at mobile.
-
-### Whitespace Philosophy
-Whitespace is generous on the marketing surfaces and tight on the discovery surfaces. The home page sits sections 64px apart with photo-illustrated feature cards using 32px internal padding, while the search results page collapses to an 8px-gutter masonry grid that tiles imagery edge-to-edge. The system reads as two tools sharing the same chrome: a magazine (hero / feature / CTA / footer) and a search engine (top nav / filter row / pin grid / load more).
-
-## Elevation & Depth
-
-| Level | Treatment | Use |
-|---|---|---|
-| 0 — Flat | No border, no shadow | Default for pin cards, feature cards, footer — the dominant treatment |
-| 1 — Hairline border | 1px solid `{colors.hairline}` | Inputs, footer column dividers, in-list rows |
-| 2 — Modal scrim + soft shadow | Modal sits on a dark scrim over the page content with a soft 16px ambient shadow | Login / signup modal, image preview modal |
-| 3 — Pin hover lift | (intentionally undocumented per system policy) | n/a |
-
-Pinterest's system has effectively no shadow elevation in its content surfaces. Pin cards sit flat on the canvas; the only "elevation" appears on the modal layer where a 16px ambient shadow paired with a 50%-opacity scrim lifts the modal above the page content.
-
-### Decorative Depth
-Depth comes entirely from the imagery itself, not from CSS effects:
-- **Pin photography** carries cinematic depth through composition (food photography, fashion close-ups, interior shots) — the design lets each tile's image speak rather than adding chrome to it.
-- **Category tile thumbnails** in the home page's feature rows use Pinterest's own pin imagery as composition assets, often with a small `{component.pin-overlay-pill}` ("Cherry red", "Preppy look", "Earthy space inspo") overlaid in the corner of the image.
-- **Modal scrim** — a 50%-opacity dark overlay over the entire page content when the login modal opens, with a 16px ambient shadow underneath the modal card lifting it to the visual top.
-
-## Shapes
-
-### Border Radius Scale
+Base unit: 8px. Finer 4/6px steps for tight inline gaps.
 
 | Token | Value | Use |
 |---|---|---|
-| `{rounded.none}` | 0px | Footer, primary nav, page sections — all flat structural surfaces |
-| `{rounded.sm}` | 8px | Rare medium-radius surface (e.g., editorial tooltip) |
-| `{rounded.md}` | 16px | Buttons, inputs, pin cards, feature cards, category tiles — the dominant component radius |
-| `{rounded.lg}` | 32px | Large pin cards, modal cards — used sparingly for "big" content surfaces |
-| `{rounded.full}` | 9999px | Search bar, filter chips, pin overlay pills, icon-circular buttons, avatars |
+| `{spacing.xxs}` | 4px | Inline gaps, icon-to-text |
+| `{spacing.xs}` | 6px | Chip padding, tight gaps |
+| `{spacing.sm}` | 8px | Card gaps, list item gaps |
+| `{spacing.md}` | 12px | Card padding, row padding |
+| `{spacing.lg}` | 16px | Section gaps, component separation |
+| `{spacing.xl}` | 24px | Page margins, major gaps |
+| `{spacing.xxl}` | 32px | Page header to content |
+| `{spacing.section}` | 64px | Major section breaks |
 
-The radius vocabulary is essentially three values: 16px for most things, 32px for big cards and modals, and pill for circular elements. There are no sharp-cornered buttons or sharp-cornered pin cards.
+### Density
 
-### Photography Geometry
-- **Pin imagery:** mixed aspect ratios — square (1:1), portrait (3:4, 2:3, 4:5), and rare landscape — preserved at their natural ratio inside `{rounded.md}` (16px) corners on small tiles and `{rounded.lg}` (32px) on large feature pins.
-- **Category tile thumbnails:** square (1:1) with `{rounded.md}` corners.
-- **Avatar circles:** 32–48px at `{rounded.full}` for in-pin attribution and profile chips.
-- **Feature card imagery:** typically 4:5 portrait on home-page category cards, with the photo occupying ~60% of the card and the headline + CTA stacked beneath.
+Table rows are 56px tall. Card padding is 12px. Gaps between list items are
+8px. The user should see 15-20 repos without scrolling on a 1080p screen.
 
-## Dashboard Pattern
+## Shapes
 
-The dashboard monitors **many repositories at once** (the target user watches dozens of
-repos simultaneously). This is an operational monitoring surface, not a content library,
-so the primary display is a **sortable table**, with an optional **compact card grid**
-toggle for users who prefer visual browsing. See AGENTS.md §5.2.
+| Token | Value | Use |
+|---|---|---|
+| `{rounded-sm}` | 8px | Buttons, inputs, chips |
+| `{rounded-md}` | 16px | Cards, panels, table wrapper |
+| `{rounded-lg}` | 32px | Modal dialogs, large cards, token form |
+| `{rounded.full}` | 9999px | Status dots, avatars, pill badges |
 
-### Display modes
+The radius vocabulary is three values: 8px for most things, 32px for large
+surfaces and modals, and full for circular elements.
 
-- **Table view (default for large watchlists):** use when the user must compare attributes
-  across repos, sort by a column, or scan a long list quickly. Each row is one repo;
-  columns are Repo · Open Issues · Open PRs · CI status · Stars · Last push. Rows are
-  dense (44px height), left-aligned, with subtle hairline dividers — no card chrome per
-  row. CI status uses a semantic color dot + label, never a full chart.
-- **Card view (compact):** use when the watchlist is small (< 12 repos) or the user
-  prefers browsable tiles. Cards are denser than the v1 cards — single row of metrics, no
-  large KPI numbers. Keep `minmax(220px, 1fr)` so more fit per row.
+## Elevation
 
-Always offer a **view toggle** (table ⇄ cards) in the page toolbar so the user picks the
-density that fits their workflow.
-
-### Summary & freshness
-
-- A **summary strip** sits above the list: total open issues, total open PRs, total repos
-  monitored, and a "last updated" timestamp. This is the at-a-glance health check.
-- A **search/filter input** filters the list by repo name live (client-side).
-- Sortable column headers (issues, PRs, stars, last push) let the user surface the
-  noisiest or stalest repos first — the core monitoring job.
-- Empty / loading / error states are handled per repo row (skeleton rows in table mode,
-  skeleton cards in card mode). A single failed repo fetch must not blank the whole list.
-
-### Semantic signals
-
-- CI status: green = passing, red = failing, amber = in progress / unknown. Pair the color
-  with a text label and an `aria-label` — never color alone.
-- "Needs attention" repos (high open issues relative to size, failing CI, or no push in N
-  days) may be subtly emphasized, but avoid alarmist styling for normal state.
+| Level | Treatment | Use |
+|---|---|---|
+| 0 — Flat | No shadow, hairline border | Default for cards, table wrapper |
+| 1 — Soft shadow | `var(--shadow-sm)` + hairline border | Token form, settings sections |
+| 2 — Modal | `var(--shadow-lg)` + backdrop scrim | Modal dialogs |
 
 ## Components
 
-> **No hover states documented** per system policy. Each spec covers Default and Active/Pressed only.
-
 ### Buttons
 
-**`button-primary`** — the universal Pinterest CTA
-- Background `{colors.primary}` (Pinterest Red), text `{colors.on-primary}`, type `{typography.button-md}`, padding `6px 14px`, height ~40px, rounded `{rounded.md}` (16px).
-- Used for "Sign up", "Join Pinterest for free", "Get started" — every primary action across every surface in the system.
-- Pressed state lives in `button-primary-pressed` — background drops to `{colors.primary-pressed}` (`#cc001f`).
+**`button-primary`** — background `{colors.primary}`, text
+`{colors.on-primary}`, font `{typography.button-md}`, height 40px, rounded
+`{rounded-md}`. For primary CTAs (Add repo, Save token).
 
-**`button-secondary`** — gray-cream alternative
-- Background `{colors.secondary-bg}` (`#e5e5e0`), text `{colors.on-secondary}`, type `{typography.button-md}`, padding `6px 14px`, height ~40px, rounded `{rounded.md}`.
-- "I already have an account", "Continue", "Cancel" — second-tier actions paired with the red primary.
-- Pressed state lives in `button-secondary-pressed` — background drops to `{colors.secondary-pressed}`.
+**`button-secondary`** — background `{colors.secondary-bg}`, text
+`{colors.on-secondary}`, height 40px, rounded `{rounded-md}`. For secondary
+actions (Cancel, Load more).
 
-**`button-tertiary`** — ghost link
-- Background transparent, text `{colors.ink}`, type `{typography.button-md}`, rounded `{rounded.md}`.
-- Used for low-emphasis actions inside dialogs ("Read the docs", "Learn more →" with a small chevron).
+**`button-tertiary`** — transparent background, text `{colors.ink}`, rounded
+`{rounded-md}`. For low-emphasis actions.
 
-**`button-icon-circular`** — circular icon button
-- Background `{colors.surface-card}`, icon `{colors.ink}`, rounded `{rounded.full}`, size 40px.
-- Carousel paddles, modal close button, and small floating action buttons in pin imagery.
+### Inputs
 
-**`button-pill-on-image`** — small overlay pill on photography
-- Background `{colors.canvas}`, text `{colors.ink}`, type `{typography.button-md}`, rounded `{rounded.full}`, padding `8px 14px`.
-- The signature "Cherry red" / "Preppy look" / "Earthy space inspo" overlay pill that anchors the corner of category-tile pin imagery.
+**`text-input`** — background `{colors.canvas}`, border 1px
+`{colors.ash}`, height 44px, rounded `{rounded-md}`. Focus: border
+`{colors-focus}`, soft blue ring.
 
-**`button-disabled`**
-- Background `{colors.surface-card}`, text `{colors.ash}` — flat soft-cream.
+### Cards
 
-### Filter & Tab Chips
+**`surface-card`** — background `{colors.surface-card}`, 1px solid
+`{colors.hairline}`, rounded `{rounded-md}`, padding `{spacing.md}`. No shadow
+by default.
 
-**`filter-chip`** + **`filter-chip-active`**
-- Default: background `{colors.surface-card}`, text `{colors.ink}`, type `{typography.button-md}`, rounded `{rounded.full}`, padding `8px 16px`.
-- Active: background `{colors.ink}`, text `{colors.on-dark}` — the chip flips fully inverted on selection.
-- Used across the search results page filter strip ("Beauty makeup", "Lipstick", "Editorial makeup"...).
+### Table
 
-### Inputs & Forms
+**`data-table`** — full-width, font `{typography.body-sm}`. Header:
+`{typography.caption-md}`, uppercase, 0.4px letter-spacing, bottom border
+`{colors.hairline}`. Rows: 56px, bottom border `{colors.hairline-soft}`, hover
+`{colors.surface}`. Numeric columns: right-aligned, tabular-nums.
 
-**`text-input`** + **`text-input-focused`**
-- Default: background `{colors.canvas}`, text `{colors.ink}`, 1px solid `{colors.ash}`, type `{typography.body-md}`, padding `11px 15px`, height ~44px, rounded `{rounded.md}`.
-- Focused: 2px `{colors.ink}` inner border + 4px `{colors.focus-outer}` outer outline — the signature double-ring focus signal.
-- Used across the login/signup modal for email, password, birthdate, country fields.
+### Filter Chips
 
-**`search-bar`** + **`search-bar-focused`**
-- Default: background `{colors.surface-card}`, text `{colors.ink}`, type `{typography.body-md}`, padding `11px 15px`, height ~48px, rounded `{rounded.full}`.
-- Focused: same dimensions, background flips to `{colors.canvas}` with a 1px `{colors.ash}` border.
-- Anchored in the center of the primary nav with a magnifier glyph at the left edge and "Search for ideas, fashion..." placeholder.
+**`filter-chip`** — transparent background, text `{colors.ink}`, font
+`{typography.button-md}`, rounded `{rounded-full}`. Active: inverted
+(`{colors.ink}` bg, `{colors.on-dark}` text).
 
-### Cards & Containers
+### CI Status Badge
 
-**`pin-card`** — the standard masonry pin tile
-- Container: background `{colors.surface-card}`, rounded `{rounded.md}` (16px), padding 0.
-- Layout: full-bleed image at the card's natural aspect ratio with no internal padding. Optional `{component.pin-overlay-pill}` anchored to one corner of the image, optional 32px circular avatar with profile name in `{typography.body-sm-strong}` overlaid at the bottom-left.
+- 8px dot + label text in `{typography.caption-md}`.
+- Green dot (`{colors.success}`) + "Pass".
+- Red dot (`{colors.error}`) + "Fail".
+- Amber dot (`{colors-warning}`) + "Running".
+- Grey dot (`{colors.ash}`) + "—" for unknown.
 
-**`pin-card-large`** — the home-page feature pin
-- Identical to `pin-card` but rounded `{rounded.lg}` (32px) — used for the large editorial pins that anchor home-page feature rows.
+### Rate Limit Badge
 
-**`pin-overlay-pill`** — anchored chip on pin imagery
-- Background `{colors.canvas}`, text `{colors.ink}`, type `{typography.button-sm}`, rounded `{rounded.full}`, padding `6px 12px`.
-- Floats over a pin's bottom-left or top-left corner with the search-term label that surfaces if the pin matches a search ("Cherry red", "Preppy look", "Earthy space inspo").
+- Status dot (8px) + remaining count.
+- Green when > 50% remaining, amber when 10-50%, red when < 10%.
 
-**`category-tile`**
-- Background `{colors.surface-card}`, rounded `{rounded.md}`, padding 16px.
-- 3- or 4-up grid of small category thumbnails inside the home-page "Bring your favorite ideas to life" section. Each tile contains a category icon or composition photograph + a short label in `{typography.body-strong}`.
+### Skeleton Loading
 
-**`feature-card`** + **`feature-card-soft`**
-- Standard: background `{colors.canvas}`, rounded `{rounded.md}`, padding 32px. Pairs a 4:5 portrait pin image (left or right) with a `{typography.heading-xl}` headline + body copy + `{component.button-primary}` red CTA.
-- Soft: background `{colors.surface-card}` for the alternating-row variant where the cream surface is needed to break up content.
+- Background `{colors.secondary-bg}` with shimmer animation.
+- Shape matches the content it replaces.
 
-**`modal-card`** — login/signup overlay
-- Background `{colors.canvas}`, rounded `{rounded.lg}` (32px), padding 32px.
-- Layout: title in `{typography.heading-lg}` ("Welcome to Pinterest"), subtitle in `{typography.body-md}`, stacked `{component.text-input}` fields (Email, Password, Birthdate, Country), primary `{component.button-primary}` "Continue", small "Already a member? Log in" link below.
-- Floats over a 50%-opacity scrim covering the entire page content with a 16px ambient shadow.
+## Layout
 
-**`hero-cta-strip`** — dark CTA strip on `create.pinterest.com`
-- Background `{colors.surface-dark}`, text `{colors.on-dark}`, type `{typography.heading-xl}`, padding `48px 32px`, rounded `{rounded.none}`.
-- Sits at the top of the creator marketing page with a single `{component.button-primary}` red CTA on the right.
+### Grid
+
+- **Max width:** 1280px, centered.
+- **Dashboard summary:** `repeat(auto-fit, minmax(180px, 1fr))`.
+- **Repo cards:** `repeat(auto-fill, minmax(220px, 1fr))`.
+- **Settings:** `repeat(auto-fit, minmax(340px, 1fr))`.
 
 ### Navigation
 
-**`primary-nav`**
-- Background `{colors.canvas}`, text `{colors.ink}`, height ~64px, type `{typography.body-strong}`, rounded `{rounded.none}`, with a 1px `{colors.hairline}` bottom rule on inner pages (no rule on the home hero).
-- Layout (desktop home): Pinterest red wordmark at left + "Explore" link, centered `{component.search-bar}`, right cluster ("About / Businesses / Create / Log in" + the always-red `{component.button-primary}` "Sign up" CTA).
-- Layout (search results): Pinterest red P-logo at left, centered search bar with the active query, right cluster ("Log in" + red Sign-up button).
-
-**Top Nav (Mobile)**
-- Hamburger menu icon at left, P-logo at center, search-glyph + Sign-up CTA at right. Search bar collapses into the magnifier icon and expands to full-width when tapped.
-
-### Footer
-
-**`footer-section`**
-- Background `{colors.canvas}`, text `{colors.mute}` in `{typography.body-sm}`, padding `32px 24px`, rounded `{rounded.none}`, with a 1px `{colors.hairline}` top rule.
-- Layout: 4-column link grid (Get the app — iOS / Android · Quick Links — Explore / Shop / Users / Collections / Shopping · Pinterest for · About — Privacy / Terms / Help Center) with column headers in `{typography.body-sm-strong}` and link lists in `{typography.body-sm}` `{colors.mute}`.
-- Bottom row: Pinterest red wordmark + "© 2026 Pinterest" in `{typography.caption-sm}` `{colors.mute}`.
-
-### Inline
-
-**`link-inline`** — body-prose anchor link
-- `{colors.ink-soft}` text with no underline by default. Pinterest's only "color" beyond brand red on chrome — a near-black warm tint used inline to differentiate links from body without color contrast.
+- Sticky top nav, 64px height, background `{colors-canvas}` with backdrop blur.
+- Left: logo + wordmark. Center: nav links. Right: theme toggle + rate badge.
+- 1px bottom border `{colors.hairline}`.
 
 ## Do's and Don'ts
 
 ### Do
-- Reserve `{colors.primary}` (Pinterest Red) for primary CTAs, the active-tab indicator, and the brand wordmark only. It is never decorative.
-- Use `{rounded.md}` (16px) on every interactive element and standard card; reserve `{rounded.lg}` (32px) for large pin cards and modals; reserve `{rounded.full}` for circular elements (search bar, chips, avatars).
-- Stage every pin image inside a `{component.pin-card}` with no internal padding — the photograph IS the card.
-- Stack content sections at `{spacing.section}` (64px) rhythm; tighten pin grids to `{spacing.sm}` (8px) gutters so imagery effectively touches.
-- Use `{component.pin-overlay-pill}` to anchor a search-term tag in the corner of a category-tile pin photograph — the system's signature decorative gesture.
-- Build hierarchy from font weight (400 → 600 → 700) and size, not from color tinting. Body stays `{colors.body}` regardless of section context.
-- Apply -1.2px letter-spacing on `{typography.display-xl}` and `{typography.heading-xl}`. The negative tracking is part of the brand voice.
+- Use `{colors.primary}` for interactive elements only. Never decorative.
+- Use `font-variant-numeric: tabular-nums` on every number in a column.
+- Keep table rows at 56px. Density is a feature.
+- Use semantic status colors only as dots, text, or thin borders.
+- Route every color through a CSS custom property. No hardcoded hex.
 
 ### Don't
-- Don't use sharp-cornered buttons or cards. There are no `{rounded.none}` interactive elements in the system.
-- Don't introduce drop shadows on cards. The only shadow in the system is the 16px ambient under `{component.modal-card}`.
-- Don't pad `{component.pin-card}` internally. The image is full-bleed; metadata sits over the image as an overlay pill, not below it.
-- Don't replace `{colors.primary}` with another red. The brand red is precise — `#e60023`.
-- Don't use `{colors.ink-soft}` (the body-prose link tint) outside of inline body anchor links. It is not a chrome color.
-- Don't introduce a third radius value between 16px and 32px. The system jumps directly from md to lg with nothing in between.
+- Don't add drop shadows to cards. Only for modals and floating panels.
+- Don't use cool tones (blue-gray, slate). The palette is warm-cream.
+- Don't increase spacing beyond `{spacing.xl}` between content sections.
+- Don't introduce new accent colors. Red is the only accent.
+- Don't use `{colors.error}` for non-critical decoration.
 
-## Responsive Behavior
+## Logo & Favicon
 
-### Breakpoints
+The Lepo mark is an SVG combining:
+- A rounded-rectangle "monitor" shape (the main body)
+- A "drop" indicator at the bottom (status pulse)
+- A circular "eye" in the center (the monitoring gaze)
+- Side "handles" (the tool/connection metaphor)
 
-| Name | Width | Key Changes |
-|---|---|---|
-| ultrawide | 1920px+ | Pin grid expands to 5–6 columns; content max-width holds at ~1280px |
-| desktop-large | 1440px | Default — 4-column pin grid, full primary nav |
-| desktop | 1280px | Same layout with narrower outer gutters |
-| desktop-small | 1024px | Pin grid collapses to 3 columns; sub-nav remains horizontal |
-| tablet | 768px | Pin grid collapses to 2 columns; primary nav becomes hamburger drawer; search bar becomes icon-only |
-| mobile | 480px | Single-column pin grid; hero `{typography.display-xl}` scales 70px → ~44px |
-| mobile-narrow | 320px | Hero further scales to ~36px; section padding tightens to 32px |
+Colors from the mark inform the brand palette:
+- Sky blue (`#38bdf8`) → the eye accent
+- Soft red (`#f87171`) → the drop indicator
+- Dark stroke (`#0f172a`) → borders and outlines
+- Light fill (`#f1f5f9`) → light-mode surface reference
 
-### Touch Targets
-All interactive elements meet WCAG AA (≥ 44×44px). `{component.button-primary}` and `{component.button-secondary}` sit at ~40px height with 14px horizontal padding (effective ~40×80px tappable). `{component.search-bar}` sits at 48px. `{component.text-input}` sits at 44px. `{component.filter-chip}` is ~36–40px height with 16px padding — extends to 44px tappable via inline padding. `{component.button-icon-circular}` is exactly 40×40 with extended hit-target padding to 48×48 inside the parent.
-
-### Collapsing Strategy
-- **Primary nav:** desktop horizontal cluster → tablet hamburger drawer at 768px. The red Sign-up CTA stays visible at every breakpoint.
-- **Search bar:** desktop centered (~480px wide) → tablet compressed (~320px) → mobile collapses to a magnifier icon that expands to a full-width overlay on tap.
-- **Pin masonry grid:** 5/6-up → 4-up → 3-up → 2-up → 1-up at 1920, 1024, 768, and 480px. Gutters drop from 8px to 6px on mobile.
-- **Home feature row:** desktop alternating left/right 2-column → tablet vertical stack with text above image → mobile single-column with full-bleed image.
-- **Modal:** desktop centered ~480px-wide card → mobile full-width sheet with rounded `{rounded.lg}` top-only and bottom-anchored CTA.
-- **Section padding:** `{spacing.section}` (64px) desktop → 48px tablet → 32px mobile.
-- **Hero headline:** `{typography.display-xl}` (70px) at desktop, scaling 56px / 44px / 36px down the breakpoint stack.
-- **Footer:** 4-up link columns → 2-up at tablet → full accordion at mobile (each header becomes a tap-to-expand row).
-
-### Image Behavior
-- Pin imagery preserves natural aspect ratio at every breakpoint; the column count changes, not the aspect.
-- Category tile thumbnails maintain 1:1 across all sizes.
-- Hero feature imagery uses art-direction crops on mobile (4:5 portrait → square) so the subject stays centered when the layout collapses to single-column.
-- All non-critical imagery is lazy-loaded as the user scrolls into the next grid row.
-
-## Iteration Guide
-
-1. Focus on ONE component at a time. Pull its YAML entry and verify every property resolves.
-2. Reference component names and tokens directly (`{colors.primary}`, `{component.button-primary-pressed}`, `{rounded.md}`) — do not paraphrase.
-3. Run `npx @google/design.md lint DESIGN.md` after edits — `broken-ref`, `contrast-ratio`, and `orphaned-tokens` warnings flag issues automatically.
-4. Add new variants as separate component entries (`-pressed`, `-disabled`, `-focused`) — do not bury them inside prose.
-5. Default body to `{typography.body-md}`; reach for `{typography.body-strong}` for emphasis; reserve `{typography.display-xl}` strictly for top-of-page hero headlines.
-6. Keep `{colors.primary}` scarce — at most one Pinterest-red CTA per fold (counting nav, hero, and feature-card CTAs together).
-7. When introducing a new component, ask whether it can be expressed with the existing pin-card + 16px-radius + cream-surface vocabulary before adding new tokens. The system's strength is that it almost never needs new ones.
-
-## Known Gaps
-
-- **Mobile screenshots not captured** — responsive behavior synthesizes Pinterest's known mobile pattern (hamburger drawer, single-column grid, hero downscale) from desktop evidence and the documented breakpoint stack.
-- **Hover states not documented** by system policy.
-- **Pin-detail close-up (single pin overlay)** is not in the captured set — the in-product Pin detail view (with comments, related pins, save board picker) likely introduces components not documented here.
-- **Authenticated chrome** (logged-in home feed, board pages, profile pages) not in the captured pages — the captured surfaces are the logged-out marketing and search experience.
-- **Pinterest mobile app screens** not in the system documented here — this is the web-only chrome.
-- **Form validation states** (success / error inline messages) not documented; only the focused-state field is captured.
+The favicon uses the full mark. The nav logo renders the SVG inline.
