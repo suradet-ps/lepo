@@ -282,10 +282,10 @@ pub fn DashboardPage() -> impl IntoView {
                               <span class="summary-value skeleton skeleton-line skeleton-line--sm"></span>
                               <span class="summary-label">"Open PRs"</span>
                           </div>
-                          <div class="summary-item">
-                              <span class="summary-value skeleton skeleton-line skeleton-line--sm"></span>
-                              <span class="summary-label">"Freshness"</span>
-                          </div>
+                                <div class="summary-item">
+                                    <span class="summary-freshness skeleton skeleton-line skeleton-line--sm"></span>
+                                    <span class="summary-label">"Freshness"</span>
+                                </div>
                       </div>
                       {if is_table {
                           view! {
@@ -303,17 +303,17 @@ pub fn DashboardPage() -> impl IntoView {
                                           </tr>
                                       </thead>
                                       <tbody>
-                                          {(0..8).map(|_| view! {
-                                              <tr>
-                                                  <td><span class="skeleton skeleton-line"></span></td>
-                                                  <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                                  <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                                  <td><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                                  <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                                  <td><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                                  <td class="num"></td>
-                                              </tr>
-                                          }).collect_view()}
+                                      {(0..8).map(|_| view! {
+                                          <tr>
+                                              <td><span class="skeleton skeleton-line"></span></td>
+                                              <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                              <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                              <td class="ci-col"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                              <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                              <td class="center"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
+                                              <td class="actions"></td>
+                                          </tr>
+                                      }).collect_view()}
                                       </tbody>
                                   </table>
                               </div>
@@ -324,8 +324,16 @@ pub fn DashboardPage() -> impl IntoView {
                               <div class="repo-grid">
                                   {(0..6).map(|_| view! {
                                       <div class="skeleton-card">
-                                          <div class="skeleton skeleton-line skeleton-line--lg"></div>
-                                          <div class="skeleton skeleton-line skeleton-line--sm"></div>
+                                          <div class="repo-card-head">
+                                              <span class="skeleton skeleton-line skeleton-line--lg"></span>
+                                          </div>
+                                          <div class="repo-card-counts">
+                                              <span class="skeleton skeleton-line skeleton-line--sm"></span>
+                                              <span class="skeleton skeleton-line skeleton-line--sm"></span>
+                                          </div>
+                                          <div class="repo-card-ci">
+                                              <span class="skeleton skeleton-line skeleton-line--sm"></span>
+                                          </div>
                                       </div>
                                   }).collect_view()}
                               </div>

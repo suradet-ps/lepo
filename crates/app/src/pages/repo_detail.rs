@@ -326,48 +326,61 @@ pub fn RepoDetailPage() -> impl IntoView {
                   let empty = items.is_empty();
                   let loading = issues_loading.get();
                   let has_more = issues_next.get().is_some();
-                  view! {
-                      <Show
-                          when=move || empty && !loading
-                          fallback=move || view! {
-                              <div class="row-list">
-                                  {items
-                                      .iter()
-                                      .cloned()
-                                      .map(|i| view! { <IssueRow issue=i/> })
-                                      .collect_view()}
-                                  {if has_more {
-                                      view! {
-                                          <button
-                                              class="button-secondary load-more"
-                                              disabled=move || loading
-                                              on:click=move |_| {
-                                                  issues_loading.set(true);
-                                                  let fut = fetch_issues(issues_next.get());
-                                                  spawn_local(fut);
+                  if loading && empty {
+                      view! {
+                          <div class="row-list">
+                              {(0..5).map(|_| view! {
+                                  <div class="row row--issue row-skeleton">
+                                      <span class="row-num"><span class="skeleton skeleton-line" style="width:36px"></span></span>
+                                      <span class="row-title"><span class="skeleton skeleton-line"></span></span>
+                                      <span class="row-labels"><span class="skeleton skeleton-line" style="width:60px"></span></span>
+                                      <span class="row-author"><span class="skeleton skeleton-line" style="width:64px"></span></span>
+                                      <span class="row-comments"><span class="skeleton skeleton-line" style="width:50px"></span></span>
+                                  </div>
+                              }).collect_view()}
+                          </div>
+                      }.into_any()
+                  } else if !empty {
+                      view! {
+                          <div class="row-list">
+                              {items
+                                  .iter()
+                                  .cloned()
+                                  .map(|i| view! { <IssueRow issue=i/> })
+                                  .collect_view()}
+                              {if has_more {
+                                  view! {
+                                      <button
+                                          class="button-secondary load-more"
+                                          disabled=move || loading
+                                          on:click=move |_| {
+                                              issues_loading.set(true);
+                                              let fut = fetch_issues(issues_next.get());
+                                              spawn_local(fut);
+                                          }
+                                      >
+                                          {move || {
+                                              if loading {
+                                                  view! { <span class="button-spinner"></span> "Loading…" }.into_any()
+                                              } else {
+                                                  "Load more".into_any()
                                               }
-                                          >
-                                              {move || {
-                                                  if loading {
-                                                      "Loading…"
-                                                  } else {
-                                                      "Load more"
-                                                  }
-                                              }}
-                                          </button>
-                                      }
-                                      .into_any()
-                                  } else {
-                                      ().into_any()
-                                  }}
-                              </div>
-                          }
-                      >
+                                          }}
+                                      </button>
+                                  }
+                                  .into_any()
+                              } else {
+                                  ().into_any()
+                              }}
+                          </div>
+                      }.into_any()
+                  } else {
+                      view! {
                           <div class="empty-state">
                               <p class="body-strong">"No issues"</p>
                               <p class="body-sm">"This repository has no issues matching the current filter."</p>
                           </div>
-                      </Show>
+                      }.into_any()
                   }
               }}
           </Show>
@@ -378,48 +391,61 @@ pub fn RepoDetailPage() -> impl IntoView {
                   let empty = items.is_empty();
                   let loading = pulls_loading.get();
                   let has_more = pulls_next.get().is_some();
-                  view! {
-                      <Show
-                          when=move || empty && !loading
-                          fallback=move || view! {
-                              <div class="row-list">
-                                  {items
-                                      .iter()
-                                      .cloned()
-                                      .map(|p| view! { <PrRow pr=p/> })
-                                      .collect_view()}
-                                  {if has_more {
-                                      view! {
-                                          <button
-                                              class="button-secondary load-more"
-                                              disabled=move || loading
-                                              on:click=move |_| {
-                                                  pulls_loading.set(true);
-                                                  let fut = fetch_pulls(pulls_next.get());
-                                                  spawn_local(fut);
+                  if loading && empty {
+                      view! {
+                          <div class="row-list">
+                              {(0..5).map(|_| view! {
+                                  <div class="row row--pr row-skeleton">
+                                      <span class="row-num"><span class="skeleton skeleton-line" style="width:36px"></span></span>
+                                      <span class="row-title"><span class="skeleton skeleton-line"></span></span>
+                                      <span class="row-labels"><span class="skeleton skeleton-line" style="width:60px"></span></span>
+                                      <span class="row-author"><span class="skeleton skeleton-line" style="width:64px"></span></span>
+                                      <span class="row-comments"><span class="skeleton skeleton-line" style="width:50px"></span></span>
+                                  </div>
+                              }).collect_view()}
+                          </div>
+                      }.into_any()
+                  } else if !empty {
+                      view! {
+                          <div class="row-list">
+                              {items
+                                  .iter()
+                                  .cloned()
+                                  .map(|p| view! { <PrRow pr=p/> })
+                                  .collect_view()}
+                              {if has_more {
+                                  view! {
+                                      <button
+                                          class="button-secondary load-more"
+                                          disabled=move || loading
+                                          on:click=move |_| {
+                                              pulls_loading.set(true);
+                                              let fut = fetch_pulls(pulls_next.get());
+                                              spawn_local(fut);
+                                          }
+                                      >
+                                          {move || {
+                                              if loading {
+                                                  view! { <span class="button-spinner"></span> "Loading…" }.into_any()
+                                              } else {
+                                                  "Load more".into_any()
                                               }
-                                          >
-                                              {move || {
-                                                  if loading {
-                                                      "Loading…"
-                                                  } else {
-                                                      "Load more"
-                                                  }
-                                              }}
-                                          </button>
-                                      }
-                                      .into_any()
-                                  } else {
-                                      ().into_any()
-                                  }}
-                              </div>
-                          }
-                      >
+                                          }}
+                                      </button>
+                                  }
+                                  .into_any()
+                              } else {
+                                  ().into_any()
+                              }}
+                          </div>
+                      }.into_any()
+                  } else {
+                      view! {
                           <div class="empty-state">
                               <p class="body-strong">"No pull requests"</p>
                               <p class="body-sm">"This repository has no open pull requests."</p>
                           </div>
-                      </Show>
+                      }.into_any()
                   }
               }}
           </Show>

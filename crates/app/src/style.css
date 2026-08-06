@@ -589,6 +589,12 @@ a:hover {
   color: var(--colors-ash);
   font: var(--typography-caption-md);
 }
+.row-skeleton {
+  pointer-events: none;
+}
+.row-skeleton .row-title {
+  flex: 1;
+}
 
 /* ---------- Filter & tab chips ---------- */
 .filter-chip {
