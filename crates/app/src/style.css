@@ -243,6 +243,8 @@ a:hover {
 /* ---------- Hamburger button ---------- */
 .nav-hamburger {
   display: none;
+  flex-direction: column;
+  justify-content: center;
   background: none;
   border: none;
   cursor: pointer;
@@ -251,7 +253,6 @@ a:hover {
   height: var(--touch-min);
   flex: 0 0 auto;
   align-items: center;
-  justify-content: center;
   border-radius: var(--rounded-sm);
   color: var(--colors-ink);
   transition: background 120ms ease;
@@ -1088,6 +1089,7 @@ a:hover {
 @media (max-width: 1023px) {
   .nav-hamburger {
     display: flex;
+    flex-direction: column;
   }
   .primary-nav-links {
     display: none;
