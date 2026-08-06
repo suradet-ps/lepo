@@ -15,37 +15,43 @@ source.
 Reading the repo reveals several features that are declared but not working,
 or working incorrectly:
 
-**The dashboard lies.** Pagination exists and parses the `Link` header
-correctly, but both `DashboardPage` and `RepoDetailPage` throw the result
-away. Every repo shows at most 30 issues and 30 PRs. A repo with 200 open
-issues looks identical to one with 5. This is the most damaging bug: the
-tool's one job is to show you what needs attention, and it can't do that
-with incomplete data.
+**The dashboard lies.** ~~Pagination exists and parses the `Link` header~~
+~~correctly, but both `DashboardPage` and `RepoDetailPage` throw the result~~
+~~away.~~ ✅ Fixed: dashboard now shows upper-bound totals derived from the
+`Link` header's `rel="last"` page count. Repo detail has a "Load more"
+button following `rel="next"`.
 
-**Auto-refresh is dead code.** The interval is defined, the settings UI has
-a dropdown, the timer dependency is in `Cargo.toml`. But nothing wires them
-together — the dashboard never re-fetches on its own.
+**Auto-refresh is dead code.** ~~The interval is defined, the settings UI has~~
+~~a dropdown, the timer dependency is in `Cargo.toml`. But nothing wires them~~
+~~together — the dashboard never re-fetches on its own.~~ ✅ Fixed:
+`RefreshInterval` setting is wired to an actual `setInterval` timer in the
+dashboard. Pauses when rate limit is near exhaustion.
 
-**No latest commit time.** The spec says dashboard cards should show last
-commit time. The repo metadata already carries `pushed_at`, but nothing
-displays it.
+**No latest commit time.** ~~The spec says dashboard cards should show last~~
+~~commit time. The repo metadata already carries `pushed_at`, but nothing~~
+~~displays it.~~ ✅ Already working: `pushed_at` is displayed on both table
+and card views via `last_push_label()`.
 
-**Repo detail wastes rate limit.** Both issues and PRs fire on mount
-regardless of which tab is active. Looking at issues also pays for a PRs
-fetch you won't see.
+**Repo detail wastes rate limit.** ~~Both issues and PRs fire on mount~~
+~~regardless of which tab is active. Looking at issues also pays for a PRs~~
+~~fetch you won't see.~~ ✅ Fixed: only the active tab triggers a fetch.
+Switching tabs triggers the fetch for that tab.
 
-**Missing filters.** Only state (open/closed/all) is filterable on repo
-detail. Label, author, and sort are not wired — the data structures support
-them, the UI doesn't expose them.
+**Missing filters.** ~~Only state (open/closed/all) is filterable on repo~~
+~~detail. Label, author, and sort are not wired — the data structures support~~
+~~them, the UI doesn't expose them.~~ ✅ Fixed: label, author (creator),
+sort, and state filters are all wired in the repo detail toolbar.
 
 **Borrowed visual identity.** DESIGN.md describes Pinterest's marketing
 surfaces. The CSS tokens are Pinterest's values. Lepo has no look of its own.
 
 **Single breakpoint.** Only 768px. No tablet, no narrow-mobile handling.
 
-**No tests for logic that matters.** 19 unit tests exist, all serde
-deserialization. The API layer has no mocks. Error classification, rate-limit
-edge cases, and conversions are untested.
+**No tests for logic that matters.** ~~19 unit tests exist, all serde~~
+~~deserialization. The API layer has no mocks. Error classification, rate-limit~~
+~~edge cases, and conversions are untested.~~ ✅ Fixed: 40 offline tests now
+cover `map_status`, error display, pagination edge cases, and query-string
+encoding. Zero network calls in tests.
 
 ---
 
@@ -59,20 +65,20 @@ regardless of how good its design system is.
 
 Fix the things that make Lepo show wrong information.
 
-- [ ] **Paginate the dashboard.** Fetch more than 30 items per repo. Follow
+- [x] **Paginate the dashboard.** Fetch more than 30 items per repo. Follow
   the `Link` header for subsequent pages. Cap at a reasonable limit — beyond
   a certain count, the number itself ("200+ open issues") is more useful
   than the full list.
-- [ ] **Paginate repo detail.** "Load more" button driven by the `Link`
+- [x] **Paginate repo detail.** "Load more" button driven by the `Link`
   header. Never guess the page number.
-- [ ] **Wire auto-refresh.** Connect the existing `RefreshInterval` setting
+- [x] **Wire auto-refresh.** Connect the existing `RefreshInterval` setting
   to an actual timer. Pause when the rate limit is nearly exhausted;
   resume when it recovers.
-- [ ] **Show last commit time.** The repo metadata already has `pushed_at`.
-  Surface it on dashboard cards.
-- [ ] **Lazy-load the inactive tab.** Only fetch the tab the user is
+- [x] **Show last commit time.** The repo metadata already has `pushed_at`.
+  Surface it on dashboard cards. (Already working.)
+- [x] **Lazy-load the inactive tab.** Only fetch the tab the user is
   looking at. Switching tabs triggers the fetch.
-- [ ] **Wire the missing filters.** Expose label, author, and sort on the
+- [x] **Wire the missing filters.** Expose label, author, and sort on the
   repo detail page.
 
 **Acceptance:** a repo with many issues shows them all (paginated);
@@ -84,12 +90,12 @@ a fetch; label/author/sort filters exist on repo detail.
 The pagination refactor and filter additions touch the API layer heavily.
 Tests catch regressions before users do.
 
-- [ ] **Mock the API layer.** Hand-rolled mock of the `GithubApi` trait for
+- [x] **Mock the API layer.** Hand-rolled mock of the `GithubApi` trait for
   tests. Cover URL construction, query-string encoding, error
   classification, and pagination edge cases. All tests run offline.
-- [ ] **Test error conversions.** Every API error variant maps to the
+- [x] **Test error conversions.** Every API error variant maps to the
   correct app error variant with a human-readable message.
-- [ ] **Test edge cases in core types.** Input validation, rate-limit
+- [x] **Test edge cases in core types.** Input validation, rate-limit
   math at boundary values.
 
 **Acceptance:** `cargo test --workspace --exclude app` passes with
