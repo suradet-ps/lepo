@@ -183,6 +183,17 @@ a:hover {
 .primary-nav-brand svg {
   flex: 0 0 auto;
 }
+
+/* Logo: adapt strokes and body fill for dark mode.
+   SVG presentation attributes have type-selector specificity (0,0,1),
+   so class rules (0,1,0) override them without !important. */
+:root[data-theme="dark"] .logo-mark path[fill="#F1F5F9"] {
+  fill: var(--colors-secondary-bg);
+}
+:root[data-theme="dark"] .logo-mark path[stroke="#0F172A"],
+:root[data-theme="dark"] .logo-mark circle[stroke="#0F172A"] {
+  stroke: var(--colors-ink);
+}
 .primary-nav-links {
   display: flex;
   gap: var(--spacing-xxs);
