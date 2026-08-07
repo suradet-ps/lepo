@@ -71,18 +71,6 @@ pub fn App() -> impl IntoView {
                                   </svg>
                                   "Lepo"
                               </a>
-                              <button
-                                  class="nav-menu-btn"
-                                  aria-label="Toggle navigation"
-                                  aria-expanded=move || menu_open.get()
-                                  on:click=move |_| {
-                                      set_menu_open.update(|open| *open = !*open);
-                                  }
-                              >
-                                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                                      <path d="M4 7h16M4 12h16M4 17h16"/>
-                                  </svg>
-                              </button>
                               <nav
                                   class="primary-nav-links"
                                   class:nav-open=move || menu_open.get()
@@ -129,6 +117,18 @@ pub fn App() -> impl IntoView {
                                   </button>
                                   <RateLimitBadge/>
                               </div>
+                              <button
+                                  class="nav-menu-btn"
+                                  aria-label="Toggle navigation"
+                                  aria-expanded=move || menu_open.get()
+                                  on:click=move |_| {
+                                      set_menu_open.update(|open| *open = !*open);
+                                  }
+                              >
+                                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                      <path d="M4 7h16M4 12h16M4 17h16"/>
+                                  </svg>
+                              </button>
                           </div>
                       </header>
                   }
