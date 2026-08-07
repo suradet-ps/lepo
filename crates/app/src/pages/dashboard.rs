@@ -11,7 +11,7 @@ use web_sys::wasm_bindgen::prelude::Closure;
 
 use models::{Issue, PullRequest, Repo, WorkflowRun};
 
-use crate::components::repo_card::{RepoCard, RepoCardData};
+use crate::components::repo_card::{count_label, RepoCard, RepoCardData};
 use crate::state::{AuthState, RateLimitState, RepoRef, SettingsState, WatchlistState};
 
 /// Which dashboard display mode is active.
@@ -165,6 +165,8 @@ pub fn DashboardPage() -> impl IntoView {
           ci: bundle.ci,
           total_open_issues: bundle.total_open_issues,
           total_open_prs: bundle.total_open_prs,
+          open_issues_estimate: bundle.open_issues_estimate,
+          open_prs_estimate: bundle.open_prs_estimate,
         })
         .collect();
       rate_limit.update(&client);
@@ -473,8 +475,17 @@ fn repo_table(
                               .repo
                               .as_ref()
                               .map_or_else(|| r.github_url(), |x| x.html_url.clone());
-                          let open_issues = data.open_issue_count();
-                          let open_prs = data.open_prs_count();
+                          let open_issues = count_label(
+                              data.open_issue_count(),
+                              data.open_issues_estimate,
+                          );
+                          let open_prs = count_label(
+                              data.open_prs_count(),
+                              data.open_prs_estimate,
+                          );
+                          let issues_title = data.open_issues_estimate.then_some(
+                              "upper bound — includes pull requests and partial pages",
+                          );
                           let stars = data.repo.as_ref().map_or(0, |x| x.stargazers_count);
                           let last_push = data.last_push_label();
                           view! {
@@ -484,7 +495,7 @@ fn repo_table(
                                           <a href=format!("/repo/{r}")>{r.to_string()}</a>
                                       </span>
                                   </td>
-                                  <td class="num metric-strong">{open_issues}</td>
+                                  <td class="num metric-strong" title=issues_title>{open_issues}</td>
                                   <td class="num metric-pr">{open_prs}</td>
                                   <td class="ci-col">
                                       <span class="ci-badge">
@@ -523,14 +534,17 @@ struct RepoBundle {
   ci: Option<WorkflowRun>,
   total_open_issues: usize,
   total_open_prs: usize,
+  open_issues_estimate: bool,
+  open_prs_estimate: bool,
 }
 
 /// Fetches metadata, issues, pulls, and latest CI run for one repo,
 /// tolerating partial failure on any single piece. The four sub-requests run
 /// concurrently so a single repo's bundle costs ~1 round-trip of latency.
 ///
-/// Returns the card data including total open-issue and open-PR counts derived
-/// from the `Link` header pagination (see `Pagination::total_pages`).
+/// Issue/PR totals are derived from the `Link` header (`Pagination::total_pages`)
+/// as upper bounds: the first page is counted exactly (PRs excluded from the
+/// issue count), later pages are assumed full. Callers mark them with "+".
 async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
   let repo_fut = client.get_repo(&r.owner, &r.name);
   let issue_params = IssueParams::default();
@@ -543,16 +557,31 @@ async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
 
   let per_page = 30_usize;
 
+  // GitHub returns PRs inside the issues endpoint, so the first page is
+  // counted exactly (PRs filtered out) and later pages are assumed full.
   let (issues_vec, issues_pagination) = issues.unwrap_or_default();
-  let total_open_issues = issues_pagination.total_pages().map_or_else(
-    || issues_vec.iter().filter(|i| !i.is_pr()).count(),
-    |pages| per_page * pages as usize,
-  );
+  let issues_page1_non_pr = issues_vec.iter().filter(|i| !i.is_pr()).count();
+  let (total_open_issues, open_issues_estimate) =
+    issues_pagination.total_pages().map_or_else(
+      || (issues_page1_non_pr, false),
+      |pages| {
+        let pages = pages as usize;
+        (
+          pages.saturating_sub(1) * per_page + issues_page1_non_pr,
+          pages > 1,
+        )
+      },
+    );
 
   let (pulls_vec, pulls_pagination) = pulls.unwrap_or_default();
-  let total_open_prs = pulls_pagination
-    .total_pages()
-    .map_or_else(|| pulls_vec.len(), |pages| per_page * pages as usize);
+  let pulls_page1_len = pulls_vec.len();
+  let (total_open_prs, open_prs_estimate) = pulls_pagination.total_pages().map_or_else(
+    || (pulls_page1_len, false),
+    |pages| {
+      let pages = pages as usize;
+      (pages.saturating_sub(1) * per_page + pulls_page1_len, pages > 1)
+    },
+  );
 
   RepoBundle {
     repo: repo.ok(),
@@ -561,6 +590,8 @@ async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
     ci: ci.ok().flatten(),
     total_open_issues,
     total_open_prs,
+    open_issues_estimate,
+    open_prs_estimate,
   }
 }
 

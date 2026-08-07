@@ -502,6 +502,21 @@ a:hover {
 .repo-card-ci {
   margin-top: var(--spacing-sm);
 }
+.repo-card-push {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font: var(--typography-small);
+  color: var(--colors-mute);
+  margin-top: auto;
+}
+.repo-card-push-label {
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font: var(--typography-caption-md);
+  color: var(--colors-mute);
+}
 
 /* ---------- Detail page rows ---------- */
 .page-toolbar {
