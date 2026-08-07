@@ -48,6 +48,7 @@
   --typography-heading: 600 20px/1.3 var(--font-sans);
   --typography-heading-lg: 700 22px/1.25 var(--font-sans);
   --typography-body: 400 14px/1.5 var(--font-sans);
+  --typography-body-sm: 400 14px/1.5 var(--font-sans);
   --typography-body-strong: 600 14px/1.5 var(--font-sans);
   --typography-body-md: 400 16px/1.4 var(--font-sans);
   --typography-small: 400 12px/1.4 var(--font-sans);
@@ -56,6 +57,7 @@
   --typography-mono: 400 13px/1.4 var(--font-mono);
   --typography-button: 600 13px/1 var(--font-sans);
   --typography-button-md: 700 14px/1 var(--font-sans);
+  --typography-button-sm: 700 12px/1 var(--font-sans);
 
   /* Spacing (8px base) */
   --spacing-xxs: 4px;
@@ -606,6 +608,18 @@ a:hover {
 }
 .row-skeleton {
   pointer-events: none;
+}
+.row-skeleton .row-num .skeleton {
+  width: 36px;
+}
+.row-skeleton .row-labels .skeleton {
+  width: 60px;
+}
+.row-skeleton .row-author .skeleton {
+  width: 64px;
+}
+.row-skeleton .row-comments .skeleton {
+  width: 50px;
 }
 .row-skeleton .row-title {
   flex: 1;
