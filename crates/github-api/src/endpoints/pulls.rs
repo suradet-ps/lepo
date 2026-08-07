@@ -20,9 +20,9 @@ pub async fn list_pulls(
   let url = format!("{base}/repos/{owner}/{repo}/pulls?{}", params.to_query());
   let resp = http::get(&url, headers).await?;
   let h = resp.headers();
+  capture(&h);
   let hm = headers_to_map(&h);
   map_status(resp.status(), &hm, "pulls not found")?;
-  capture(&h);
   let body: Vec<PullRequest> = resp
     .json()
     .await

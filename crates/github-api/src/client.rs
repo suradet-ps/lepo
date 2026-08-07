@@ -178,8 +178,8 @@ impl GithubApi for GithubClient {
     let resp = crate::http::get(&url, headers).await?;
     let h = resp.headers();
     let hm = headers_to_map(&h);
-    map_status(resp.status(), &hm, "rate_limit failed")?;
     (self.capture())(&h);
+    map_status(resp.status(), &hm, "rate_limit failed")?;
     let body: RateLimitBody = resp
       .json()
       .await

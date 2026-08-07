@@ -17,8 +17,8 @@ pub async fn get_user(
   let url = format!("{base}/user");
   let resp = http::get(&url, headers).await?;
   let h = resp.headers();
-  map_status(resp.status(), &headers_to_map(&h), "user request failed")?;
   capture(&h);
+  map_status(resp.status(), &headers_to_map(&h), "user request failed")?;
   resp
     .json::<User>()
     .await
@@ -36,9 +36,9 @@ pub async fn get_repo(
   let url = format!("{base}/repos/{owner}/{repo}");
   let resp = http::get(&url, headers).await?;
   let h = resp.headers();
+  capture(&h);
   let hm = headers_to_map(&h);
   map_status(resp.status(), &hm, "repository not found")?;
-  capture(&h);
   let body: Repo = resp
     .json()
     .await

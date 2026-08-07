@@ -24,9 +24,9 @@ pub async fn latest_workflow_run(
   let url = format!("{base}/repos/{owner}/{repo}/actions/runs?per_page=1");
   let resp = http::get(&url, headers).await?;
   let h = resp.headers();
+  capture(&h);
   let hm = headers_to_map(&h);
   map_status(resp.status(), &hm, "workflow runs not found")?;
-  capture(&h);
   let body: RunsResponse = resp
     .json()
     .await

@@ -21,9 +21,9 @@ pub async fn list_issues(
   let url = format!("{base}/repos/{owner}/{repo}/issues?{}", params.to_query());
   let resp = http::get(&url, headers).await?;
   let h = resp.headers();
+  capture(&h);
   let hm = headers_to_map(&h);
   map_status(resp.status(), &hm, "issues not found")?;
-  capture(&h);
   let body: Vec<Issue> = resp
     .json()
     .await
