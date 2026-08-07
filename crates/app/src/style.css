@@ -1089,3 +1089,28 @@ a:hover {
     display: none;
   }
 }
+
+/* ---------- Touch targets: coarse pointers (see DESIGN.md) ----------
+   WCAG AA minimum target size is 24px; 44px is the comfortable standard
+   for touch screens, applied only where the primary pointer is coarse so
+   desktop density is untouched. */
+@media (pointer: coarse) {
+  .nav-link,
+  .filter-chip,
+  .view-toggle button,
+  .theme-toggle,
+  .nav-menu-btn,
+  .load-more,
+  .button-primary,
+  .button-secondary,
+  .button-tertiary,
+  .text-input {
+    min-height: 44px;
+  }
+  .tabs .filter-chip {
+    padding-inline: 16px;
+  }
+  .row {
+    padding-block: var(--spacing-lg);
+  }
+}
