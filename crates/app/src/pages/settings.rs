@@ -1,4 +1,4 @@
-//! Settings page: manage token, watchlist, refresh interval, theme (AGENTS §5.6).
+//! Settings page: manage token, watchlist, refresh interval (AGENTS §5.6).
 
 use leptos::prelude::*;
 
@@ -100,7 +100,11 @@ pub fn SettingsPage() -> impl IntoView {
                   <h2 class="heading-md">"Auto-refresh"</h2>
                   <div class="field">
                       <span class="field-label">"Refresh interval"</span>
-                      <select class="text-input" on:change=on_interval_change>
+                      <select
+                          class="text-input"
+                          prop:value=move || settings.refresh_interval.get().value()
+                          on:change=on_interval_change
+                      >
                           <option value="0">"Manual only"</option>
                           <option value="1">"Every 1 minute"</option>
                           <option value="5">"Every 5 minutes"</option>

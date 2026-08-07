@@ -11,7 +11,7 @@ use web_sys::wasm_bindgen::prelude::Closure;
 
 use models::{Issue, PullRequest, Repo, WorkflowRun};
 
-use crate::components::repo_card::{RepoCard, RepoCardData};
+use crate::components::repo_card::{RepoCard, RepoCardData, count_label};
 use crate::state::{AuthState, RateLimitState, RepoRef, SettingsState, WatchlistState};
 
 /// Which dashboard display mode is active.
@@ -53,9 +53,13 @@ pub fn DashboardPage() -> impl IntoView {
 
   // Auto-refresh: a version counter that triggers re-fetch when bumped.
   let (refresh_version, set_refresh_version) = signal(0_u32);
+  // Number of repos whose entire bundle failed to load on the last fetch.
+  let (failed_repos, set_failed_repos) = signal(0_usize);
 
   // Wire the configured RefreshInterval to an actual timer.
-  // Uses Arc<AtomicI32> for the JS interval ID (Send+Sync for on_cleanup).
+  // The effect only tracks the interval setting; the tick closure reads the
+  // token and rate limit untracked, so responses from other pages never
+  // restart the countdown.
   {
     let current_id: std::sync::Arc<std::sync::atomic::AtomicI32> =
       std::sync::Arc::new(std::sync::atomic::AtomicI32::new(0));
@@ -74,26 +78,26 @@ pub fn DashboardPage() -> impl IntoView {
         }
 
         if let Some(seconds) = interval.seconds() {
-          // Pause auto-refresh when rate limit is nearly exhausted (< 10 remaining).
-          let should_pause = rate_limit.limit.get().is_some_and(|rl| rl.remaining < 10);
-
-          if !should_pause {
-            let millis = (seconds * 1000) as i32;
-            if let Some(win) = web_sys::window() {
-              let closure = Closure::wrap(Box::new(move || {
-                let has_token = auth.token.get().is_some();
-                let rate_ok = rate_limit.limit.get().is_none_or(|rl| rl.remaining > 10);
-                if has_token && rate_ok {
-                  set_refresh_version.update(|v| *v += 1);
-                }
-              }) as Box<dyn FnMut()>);
-              if let Ok(id) = win.set_interval_with_callback_and_timeout_and_arguments_0(
-                closure.as_ref().unchecked_ref(),
-                millis,
-              ) {
-                closure.forget();
-                current_id.store(id, std::sync::atomic::Ordering::SeqCst);
+          let millis = (seconds * 1000) as i32;
+          if let Some(win) = web_sys::window() {
+            let closure = Closure::wrap(Box::new(move || {
+              let has_token = auth.token.get_untracked().is_some();
+              // Pause while the rate limit is nearly exhausted (< 10 remaining);
+              // the next tick resumes automatically once it recovers.
+              let rate_ok = rate_limit
+                .limit
+                .get_untracked()
+                .is_none_or(|rl| rl.remaining > 10);
+              if has_token && rate_ok {
+                set_refresh_version.update(|v| *v += 1);
               }
+            }) as Box<dyn FnMut()>);
+            if let Ok(id) = win.set_interval_with_callback_and_timeout_and_arguments_0(
+              closure.as_ref().unchecked_ref(),
+              millis,
+            ) {
+              closure.forget();
+              current_id.store(id, std::sync::atomic::Ordering::SeqCst);
             }
           }
         }
@@ -144,6 +148,7 @@ pub fn DashboardPage() -> impl IntoView {
     let watchlist = watchlist;
     let _tick = refresh_version.get(); // re-fetch when auto-refresh fires
     async move {
+      set_failed_repos.set(0);
       let repos = watchlist.repos.get();
       let client = match auth.client() {
         Some(c) => c,
@@ -157,14 +162,21 @@ pub fn DashboardPage() -> impl IntoView {
         .await
         .into_iter()
         .enumerate()
-        .map(|(i, bundle)| RepoCardData {
-          r#ref: repos[i].clone(),
-          repo: bundle.repo,
-          issues: bundle.issues,
-          pulls: bundle.pulls,
-          ci: bundle.ci,
-          total_open_issues: bundle.total_open_issues,
-          total_open_prs: bundle.total_open_prs,
+        .map(|(i, bundle)| {
+          if bundle.all_failed {
+            set_failed_repos.update(|n| *n += 1);
+          }
+          RepoCardData {
+            r#ref: repos[i].clone(),
+            repo: bundle.repo,
+            issues: bundle.issues,
+            pulls: bundle.pulls,
+            ci: bundle.ci,
+            total_open_issues: bundle.total_open_issues,
+            total_open_prs: bundle.total_open_prs,
+            open_issues_estimate: bundle.open_issues_estimate,
+            open_prs_estimate: bundle.open_prs_estimate,
+          }
         })
         .collect();
       rate_limit.update(&client);
@@ -265,83 +277,19 @@ pub fn DashboardPage() -> impl IntoView {
                   .map(|msg| view! { <span class="add-repo-success">{msg}</span> })
           }}
 
-          <Transition
-              fallback=move || {
-                  let is_table = view_mode.get() == ViewMode::Table;
+          {move || {
+              let n = failed_repos.get();
+              (n > 0).then(|| {
                   view! {
-                      <div class="summary-strip">
-                          <div class="summary-item">
-                              <span class="summary-value skeleton skeleton-line skeleton-line--sm"></span>
-                              <span class="summary-label">"Repos"</span>
-                          </div>
-                          <div class="summary-item">
-                              <span class="summary-value skeleton skeleton-line skeleton-line--sm"></span>
-                              <span class="summary-label">"Open issues"</span>
-                          </div>
-                          <div class="summary-item">
-                              <span class="summary-value skeleton skeleton-line skeleton-line--sm"></span>
-                              <span class="summary-label">"Open PRs"</span>
-                          </div>
-                                <div class="summary-item">
-                                    <span class="summary-freshness skeleton skeleton-line skeleton-line--sm"></span>
-                                    <span class="summary-label">"Freshness"</span>
-                                </div>
+                      <div class="dash-error">
+                          "Couldn't refresh {n} repo(s) — check the token, its scopes, and the rate limit."
                       </div>
-                      {if is_table {
-                          view! {
-                              <div class="repo-table-wrap">
-                                  <table class="repo-table">
-                                      <thead>
-                                          <tr>
-                                              <th>"Repository"</th>
-                                              <th class="num">"Open Issues"</th>
-                                              <th class="num">"Open PRs"</th>
-                                              <th class="num">"CI"</th>
-                                              <th class="num">"Stars"</th>
-                                              <th>"Last push"</th>
-                                              <th></th>
-                                          </tr>
-                                      </thead>
-                                      <tbody>
-                                      {(0..8).map(|_| view! {
-                                          <tr>
-                                              <td><span class="skeleton skeleton-line"></span></td>
-                                              <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                              <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                              <td class="ci-col"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                              <td class="num"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                              <td class="center"><span class="skeleton skeleton-line skeleton-line--sm"></span></td>
-                                              <td class="actions"></td>
-                                          </tr>
-                                      }).collect_view()}
-                                      </tbody>
-                                  </table>
-                              </div>
-                          }
-                          .into_any()
-                      } else {
-                          view! {
-                              <div class="repo-grid">
-                                  {(0..6).map(|_| view! {
-                                      <div class="skeleton-card">
-                                          <div class="repo-card-head">
-                                              <span class="skeleton skeleton-line skeleton-line--lg"></span>
-                                          </div>
-                                          <div class="repo-card-counts">
-                                              <span class="skeleton skeleton-line skeleton-line--sm"></span>
-                                              <span class="skeleton skeleton-line skeleton-line--sm"></span>
-                                          </div>
-                                          <div class="repo-card-ci">
-                                              <span class="skeleton skeleton-line skeleton-line--sm"></span>
-                                          </div>
-                                      </div>
-                                  }).collect_view()}
-                              </div>
-                          }
-                          .into_any()
-                      }}
                   }
-              }
+              })
+          }}
+
+          <Transition
+              fallback=move || view! { <p class="loading-text">"Loading…"</p> }
           >
               {move || {
                   bundles.get().map(|_| {
@@ -473,8 +421,17 @@ fn repo_table(
                               .repo
                               .as_ref()
                               .map_or_else(|| r.github_url(), |x| x.html_url.clone());
-                          let open_issues = data.open_issue_count();
-                          let open_prs = data.open_prs_count();
+                          let open_issues = count_label(
+                              data.open_issue_count(),
+                              data.open_issues_estimate,
+                          );
+                          let open_prs = count_label(
+                              data.open_prs_count(),
+                              data.open_prs_estimate,
+                          );
+                          let issues_title = data.open_issues_estimate.then_some(
+                              "upper bound — includes pull requests and partial pages",
+                          );
                           let stars = data.repo.as_ref().map_or(0, |x| x.stargazers_count);
                           let last_push = data.last_push_label();
                           view! {
@@ -484,7 +441,7 @@ fn repo_table(
                                           <a href=format!("/repo/{r}")>{r.to_string()}</a>
                                       </span>
                                   </td>
-                                  <td class="num metric-strong">{open_issues}</td>
+                                  <td class="num metric-strong" title=issues_title>{open_issues}</td>
                                   <td class="num metric-pr">{open_prs}</td>
                                   <td class="ci-col">
                                       <span class="ci-badge">
@@ -523,14 +480,20 @@ struct RepoBundle {
   ci: Option<WorkflowRun>,
   total_open_issues: usize,
   total_open_prs: usize,
+  open_issues_estimate: bool,
+  open_prs_estimate: bool,
+  /// True when every sub-request for this repo failed (likely an auth or
+  /// rate-limit problem affecting the whole dashboard).
+  all_failed: bool,
 }
 
 /// Fetches metadata, issues, pulls, and latest CI run for one repo,
 /// tolerating partial failure on any single piece. The four sub-requests run
 /// concurrently so a single repo's bundle costs ~1 round-trip of latency.
 ///
-/// Returns the card data including total open-issue and open-PR counts derived
-/// from the `Link` header pagination (see `Pagination::total_pages`).
+/// Issue/PR totals are derived from the `Link` header (`Pagination::total_pages`)
+/// as upper bounds: the first page is counted exactly (PRs excluded from the
+/// issue count), later pages are assumed full. Callers mark them with "+".
 async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
   let repo_fut = client.get_repo(&r.owner, &r.name);
   let issue_params = IssueParams::default();
@@ -540,19 +503,37 @@ async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
   let ci_fut = client.latest_workflow_run(&r.owner, &r.name);
 
   let (repo, issues, pulls, ci) = futures::join!(repo_fut, issues_fut, pulls_fut, ci_fut,);
+  let all_failed = repo.is_err() && issues.is_err() && pulls.is_err() && ci.is_err();
 
   let per_page = 30_usize;
 
+  // GitHub returns PRs inside the issues endpoint, so the first page is
+  // counted exactly (PRs filtered out) and later pages are assumed full.
   let (issues_vec, issues_pagination) = issues.unwrap_or_default();
-  let total_open_issues = issues_pagination.total_pages().map_or_else(
-    || issues_vec.iter().filter(|i| !i.is_pr()).count(),
-    |pages| per_page * pages as usize,
+  let issues_page1_non_pr = issues_vec.iter().filter(|i| !i.is_pr()).count();
+  let (total_open_issues, open_issues_estimate) = issues_pagination.total_pages().map_or_else(
+    || (issues_page1_non_pr, false),
+    |pages| {
+      let pages = pages as usize;
+      (
+        pages.saturating_sub(1) * per_page + issues_page1_non_pr,
+        pages > 1,
+      )
+    },
   );
 
   let (pulls_vec, pulls_pagination) = pulls.unwrap_or_default();
-  let total_open_prs = pulls_pagination
-    .total_pages()
-    .map_or_else(|| pulls_vec.len(), |pages| per_page * pages as usize);
+  let pulls_page1_len = pulls_vec.len();
+  let (total_open_prs, open_prs_estimate) = pulls_pagination.total_pages().map_or_else(
+    || (pulls_page1_len, false),
+    |pages| {
+      let pages = pages as usize;
+      (
+        pages.saturating_sub(1) * per_page + pulls_page1_len,
+        pages > 1,
+      )
+    },
+  );
 
   RepoBundle {
     repo: repo.ok(),
@@ -561,6 +542,9 @@ async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
     ci: ci.ok().flatten(),
     total_open_issues,
     total_open_prs,
+    open_issues_estimate,
+    open_prs_estimate,
+    all_failed,
   }
 }
 

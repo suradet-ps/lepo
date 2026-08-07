@@ -104,6 +104,28 @@ impl GithubClient {
       }
     })
   }
+
+  /// Fetches one raw page of a list endpoint (used for "Load more" cursors).
+  ///
+  /// `url` is an absolute URL taken from a previous `Link` header. Headers
+  /// are captured for the rate-limit state and the status is classified with
+  /// [`map_status`], so raw cursor fetches behave like every other request.
+  pub async fn get_page<T: serde::de::DeserializeOwned>(
+    &self,
+    url: &str,
+  ) -> Result<(Vec<T>, Pagination), ApiError> {
+    let resp = crate::http::get(url, self.auth_headers()).await?;
+    let h = resp.headers();
+    let hm = headers_to_map(&h);
+    (self.capture())(&h);
+    map_status(resp.status(), &hm, "page request failed")?;
+    let body: Vec<T> = resp
+      .json()
+      .await
+      .map_err(|e| ApiError::Parse(e.to_string()))?;
+    let pagination = Pagination::from_headers(&hm);
+    Ok((body, pagination))
+  }
 }
 
 impl GithubApi for GithubClient {
@@ -175,15 +197,11 @@ impl GithubApi for GithubClient {
   async fn rate_limit(&self) -> Result<RateLimit, ApiError> {
     let headers = self.auth_headers();
     let url = format!("{BASE_URL}/rate_limit");
-    let resp = gloo_net::http::Request::get(&url)
-      .headers(headers)
-      .send()
-      .await
-      .map_err(|e| ApiError::Request(e.to_string()))?;
+    let resp = crate::http::get(&url, headers).await?;
     let h = resp.headers();
     let hm = headers_to_map(&h);
-    map_status(resp.status(), &hm, "rate_limit failed")?;
     (self.capture())(&h);
+    map_status(resp.status(), &hm, "rate_limit failed")?;
     let body: RateLimitBody = resp
       .json()
       .await

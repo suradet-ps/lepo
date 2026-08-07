@@ -1,6 +1,6 @@
 //! Centralized localStorage access. All keys for the app live here so they can
-//! be cleared consistently (e.g. on logout). No other module reads/writes
-//! storage keys directly.
+//! be managed consistently. No other module reads/writes storage keys
+//! directly.
 
 use gloo_storage::{LocalStorage, Storage};
 use leptos::logging::error;
@@ -35,12 +35,4 @@ pub fn save_json<T: serde::Serialize>(key: &str, value: &T) -> Result<(), AppErr
 /// Removes a single key from localStorage.
 pub fn remove(key: &str) {
   LocalStorage::delete(key);
-}
-
-/// Clears every Lepo-owned key (used on logout).
-pub fn clear_all() {
-  remove(KEY_TOKEN);
-  remove(KEY_WATCHLIST);
-  remove(KEY_REFRESH_INTERVAL);
-  remove(KEY_THEME);
 }

@@ -20,13 +20,22 @@ pub enum RefreshInterval {
 
 impl RefreshInterval {
   /// Number of seconds between refreshes, or `None` for manual.
-  #[allow(dead_code)]
   pub const fn seconds(self) -> Option<u64> {
     match self {
       Self::Manual => None,
       Self::Every1Min => Some(60),
       Self::Every5Min => Some(300),
       Self::Every15Min => Some(900),
+    }
+  }
+
+  /// The option `value` used in the settings `<select>`.
+  pub const fn value(self) -> &'static str {
+    match self {
+      Self::Manual => "0",
+      Self::Every1Min => "1",
+      Self::Every5Min => "5",
+      Self::Every15Min => "15",
     }
   }
 }

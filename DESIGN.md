@@ -215,10 +215,12 @@ by default.
 - Status dot (8px) + remaining count.
 - Green when > 50% remaining, amber when 10-50%, red when < 10%.
 
-### Skeleton Loading
+### Loading
 
-- Background `{colors.secondary-bg}` with shimmer animation.
-- Shape matches the content it replaces.
+- Muted "Loading…" text (`{colors-mute}`, `{typography.body-md}`),
+  centered, while data is being fetched.
+- Buttons that trigger work (e.g. "Load more", "Adding…") use the
+  inline spinner.
 
 ## Layout
 

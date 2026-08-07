@@ -19,10 +19,14 @@ pub struct RepoCardData {
   pub pulls: Vec<PullRequest>,
   /// Latest CI status (most recent workflow run), if any.
   pub ci: Option<WorkflowRun>,
-  /// Total number of open issues across all pages (0 = use `issues.len()`).
+  /// Estimated number of open issues across all pages (0 = use `issues.len()`).
   pub total_open_issues: usize,
-  /// Total number of open PRs across all pages (0 = use `pulls.len()`).
+  /// Estimated number of open PRs across all pages (0 = use `pulls.len()`).
   pub total_open_prs: usize,
+  /// Whether `total_open_issues` is an upper bound derived from pagination.
+  pub open_issues_estimate: bool,
+  /// Whether `total_open_prs` is an upper bound derived from pagination.
+  pub open_prs_estimate: bool,
 }
 
 impl RepoCardData {
@@ -77,6 +81,15 @@ impl RepoCardData {
   }
 }
 
+/// Formats a count, appending "+" when it is an upper bound from pagination.
+pub fn count_label(count: usize, estimated: bool) -> String {
+  if estimated {
+    format!("{count}+")
+  } else {
+    count.to_string()
+  }
+}
+
 /// Formats a timestamp as a short relative label (e.g. "3d ago").
 fn format_relative(ts: &chrono::DateTime<chrono::Utc>) -> String {
   let now = crate::time::now();
@@ -95,13 +108,15 @@ fn format_relative(ts: &chrono::DateTime<chrono::Utc>) -> String {
 }
 
 /// A single repo summary card. Shows star/fork counts, open issue count
-/// (excluding PRs), and open PR count. Clicking navigates to the detail page.
+/// (excluding PRs), open PR count, and last push. Clicking navigates to the
+/// detail page.
 #[component]
 pub fn RepoCard(data: RepoCardData) -> impl IntoView {
-  let open_issues = data.issues.iter().filter(|i| !i.is_pr()).count();
-  let open_prs = data.pulls.len();
+  let open_issues = count_label(data.open_issue_count(), data.open_issues_estimate);
+  let open_prs = count_label(data.open_prs_count(), data.open_prs_estimate);
   let stars = data.repo.as_ref().map_or(0, |r| r.stargazers_count);
   let forks = data.repo.as_ref().map_or(0, |r| r.forks_count);
+  let last_push = data.last_push_label();
   let ref_str = data.r#ref.to_string();
 
   view! {
@@ -140,6 +155,10 @@ pub fn RepoCard(data: RepoCardData) -> impl IntoView {
                     </span>
                 }
             }}
+          </div>
+          <div class="repo-card-push">
+              <span class="repo-card-push-label">"Last push"</span>
+              <span class="repo-card-push-value">{last_push}</span>
           </div>
       </div>
   }

@@ -34,6 +34,10 @@ pub enum ApiError {
     /// Unix epoch seconds when the window resets.
     reset: u64,
   },
+
+  /// The request did not complete within the configured timeout.
+  #[error("request timed out")]
+  Timeout,
 }
 
 #[cfg(test)]
@@ -80,5 +84,11 @@ mod tests {
       e.to_string(),
       "rate limit exceeded; resets at unix 1700000000"
     );
+  }
+
+  #[test]
+  fn timeout_error_display() {
+    let e = ApiError::Timeout;
+    assert_eq!(e.to_string(), "request timed out");
   }
 }

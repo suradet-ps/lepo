@@ -9,7 +9,22 @@ use leptos_router::{
 
 use crate::components::rate_limit_badge::RateLimitBadge;
 use crate::pages::{DashboardPage, LoginPage, RepoDetailPage, SettingsPage};
-use crate::state::{AuthState, RateLimitState, SettingsState, Theme, WatchlistState};
+use crate::state::{AuthState, AuthStatus, RateLimitState, SettingsState, Theme, WatchlistState};
+
+/// Renders `children` only while logged in; otherwise shows the login page.
+#[component]
+fn AuthedView(children: ChildrenFn) -> impl IntoView {
+  let auth = expect_context::<AuthState>();
+  view! {
+      {move || {
+          if matches!(auth.status.get(), AuthStatus::LoggedIn(_)) {
+              children().into_any()
+          } else {
+              view! { <LoginPage/> }.into_any()
+          }
+      }}
+  }
+}
 
 /// The root component. Provides global state via context and renders the router.
 #[component]
@@ -20,7 +35,6 @@ pub fn App() -> impl IntoView {
   provide_context(SettingsState::from_storage());
   provide_context(RateLimitState::new());
 
-  let auth = expect_context::<AuthState>();
   let settings = expect_context::<SettingsState>();
 
   // Reflect the theme onto the document root so `:root[data-theme]` CSS applies.
@@ -105,21 +119,21 @@ pub fn App() -> impl IntoView {
                   <Route
                       path=path!("/")
                       view=move || {
-                          view! {
-                              <Show
-                                  when=move || matches!(
-                                      auth.status.get(),
-                                      crate::state::AuthStatus::LoggedIn(_)
-                                  )
-                                  fallback=|| view! { <LoginPage/> }
-                              >
-                                  <DashboardPage/>
-                              </Show>
-                          }
+                          view! { <AuthedView><DashboardPage/></AuthedView> }
                       }
                   />
-                  <Route path=path!("/repo/:owner/:repo") view=RepoDetailPage/>
-                  <Route path=path!("/settings") view=SettingsPage/>
+                  <Route
+                      path=path!("/repo/:owner/:repo")
+                      view=move || {
+                          view! { <AuthedView><RepoDetailPage/></AuthedView> }
+                      }
+                  />
+                  <Route
+                      path=path!("/settings")
+                      view=move || {
+                          view! { <AuthedView><SettingsPage/></AuthedView> }
+                      }
+                  />
               </Routes>
           </main>
           </Router>
