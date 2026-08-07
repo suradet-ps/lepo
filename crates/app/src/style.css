@@ -541,6 +541,10 @@ a:hover {
   border-radius: var(--rounded-full);
 }
 .filters {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
   margin-bottom: var(--spacing-md);
 }
 .filters .text-input {
