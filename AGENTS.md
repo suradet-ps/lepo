@@ -399,12 +399,16 @@ Default to starting with Phase 1.
 ## 11. Common Commands
 
 ```bash
-trunk serve                                          # dev server + hot reload (run from crates/app)
-trunk build --release                                # production build
+trunk serve                                          # dev server + hot reload (from workspace root)
+trunk build --release                                # production build (from workspace root)
 cargo check --workspace --target wasm32-unknown-unknown
 cargo clippy --workspace --target wasm32-unknown-unknown -- -D warnings
 cargo test --workspace --exclude app                 # test only models/github-api (no wasm target needed)
 ```
+
+All commands run from the workspace root: the Trunk assets (`index.html`,
+`Trunk.toml`, `favicon.svg`) live at the root and point at
+`crates/app/Cargo.toml`, so no `cd crates/app` is ever needed.
 
 ---
 

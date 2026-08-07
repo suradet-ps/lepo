@@ -65,18 +65,16 @@ crates/
 ### Development
 
 ```bash
-cd crates/app
 trunk serve --port 3000 --open
 ```
 
 ### Build (production)
 
 ```bash
-cd crates/app
 trunk build --release
 ```
 
-Output is in `crates/app/dist/` — deploy the folder to any static host.
+Output is in `dist/` — deploy the folder to any static host.
 
 ## Scripts
 
@@ -86,8 +84,8 @@ Output is in `crates/app/dist/` — deploy the folder to any static host.
 | `cargo clippy --workspace --target wasm32-unknown-unknown -- -D clippy::correctness -D clippy::suspicious` | Lint |
 | `cargo fmt --all --check` | Format check (2-space indent, edition 2024) |
 | `cargo test --workspace --exclude app` | Run library unit tests |
-| `cd crates/app && trunk serve --port 3000 --open` | Dev server with HMR |
-| `cd crates/app && trunk build --release` | Production build |
+| `trunk serve --port 3000 --open` | Dev server with HMR |
+| `trunk build --release` | Production build |
 
 ## Security
 
@@ -111,8 +109,8 @@ To report a vulnerability privately, see [SECURITY.md](./SECURITY.md).
 ## Deployment (Vercel)
 
 1. Connect the repository to Vercel.
-2. Set build command: `cd crates/app && trunk build --release`
-3. Set output directory: `crates/app/dist`
+2. Set build command: `trunk build --release`
+3. Set output directory: `dist`
 4. The app calls `api.github.com` directly from the browser (CORS-enabled), so no backend
    or proxy is required.
 
