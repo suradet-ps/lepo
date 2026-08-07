@@ -8,34 +8,20 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_params_map;
 
-use github_api::{GithubApi, GithubClient, IssueParams, Pagination, PullParams};
+use github_api::{ApiError, GithubApi, GithubClient, IssueParams, Pagination, PullParams};
 use models::Issue;
 
 use crate::components::issue_row::IssueRow;
 use crate::components::pr_row::PrRow;
 use crate::state::{AuthState, RateLimitState, RepoRef};
 
-/// Fetches one page from a raw URL, appends items to `out`, and returns the
-/// next-page cursor. Handles status errors and JSON parse failures gracefully
-/// (returns `None` on any error).
+/// Fetches one page from a raw URL via the shared client so timeouts, error
+/// classification, and rate-limit capture behave like every other request.
 async fn fetch_next_page<T: serde::de::DeserializeOwned>(
   client: &GithubClient,
   url: &str,
-  out: &mut Vec<T>,
-) -> Option<Option<String>> {
-  use gloo_net::http::Request;
-  let headers = client.auth_headers();
-  let resp = Request::get(url).headers(headers).send().await.ok()?;
-  let status = resp.status();
-  let h = resp.headers();
-  let hm = github_api::client::headers_to_map(&h);
-  if !(200..300).contains(&status) {
-    return None;
-  }
-  let body: Vec<T> = resp.json().await.unwrap_or_default();
-  let pagination = Pagination::from_headers(&hm);
-  out.extend(body);
-  Some(pagination.next)
+) -> Result<(Vec<T>, Pagination), ApiError> {
+  client.get_page(url).await
 }
 
 /// The repo detail route. Expects an `owner` and `repo` path param.
@@ -88,15 +74,14 @@ pub fn RepoDetailPage() -> impl IntoView {
         };
 
         let result = if let Some(ref url) = next_url {
-          let mut items = Vec::new();
-          match fetch_next_page(&client, url, &mut items).await {
-            Some(next) => {
+          match fetch_next_page::<Issue>(&client, url).await {
+            Ok((mut items, pagination)) => {
               rate_limit.update(&client);
               // Filter PRs out — GitHub's issues endpoint returns PRs too.
               items.retain(|i: &Issue| !i.is_pr());
-              (items, Pagination { next, last: None })
+              (items, Pagination { next: pagination.next, last: None })
             }
-            None => {
+            Err(_) => {
               issues_loading.set(false);
               return;
             }
@@ -176,13 +161,12 @@ pub fn RepoDetailPage() -> impl IntoView {
         };
 
         let result = if let Some(ref url) = next_url {
-          let mut items = Vec::new();
-          match fetch_next_page(&client, url, &mut items).await {
-            Some(next) => {
+          match fetch_next_page::<models::PullRequest>(&client, url).await {
+            Ok((items, pagination)) => {
               rate_limit.update(&client);
-              (items, Pagination { next, last: None })
+              (items, Pagination { next: pagination.next, last: None })
             }
-            None => {
+            Err(_) => {
               pulls_loading.set(false);
               return;
             }
