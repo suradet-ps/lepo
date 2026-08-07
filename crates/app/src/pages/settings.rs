@@ -123,7 +123,7 @@ pub fn SettingsPage() -> impl IntoView {
               <section class="settings-section">
                   <h2 class="heading-md">"Theme"</h2>
                   <p class="body-sm">"Choose how Lepo looks."</p>
-                  <div class="theme-toggle">
+                  <div class="theme-picker">
                       <button
                           class=move || {
                               if settings.theme.get() == Theme::Light {

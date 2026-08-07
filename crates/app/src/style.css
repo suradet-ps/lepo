@@ -639,7 +639,7 @@ a:hover {
   flex: 1;
 }
 
-.theme-toggle {
+.theme-picker {
   display: flex;
   gap: var(--spacing-sm);
 }

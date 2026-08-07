@@ -36,11 +36,3 @@ pub fn save_json<T: serde::Serialize>(key: &str, value: &T) -> Result<(), AppErr
 pub fn remove(key: &str) {
   LocalStorage::delete(key);
 }
-
-/// Clears every Lepo-owned key (used on logout).
-pub fn clear_all() {
-  remove(KEY_TOKEN);
-  remove(KEY_WATCHLIST);
-  remove(KEY_REFRESH_INTERVAL);
-  remove(KEY_THEME);
-}
