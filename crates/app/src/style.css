@@ -86,6 +86,15 @@
   --content-max: 1280px;
 }
 
+/* ---------- Responsive breakpoints ----------
+   Documented in DESIGN.md "Layout > Breakpoints":
+     mobile       < 480px
+     tablet       480-767px
+     desktop-small 768-1023px
+     desktop      >= 1024px
+   CSS custom properties can't be used inside @media, so these exact
+   pixel values are repeated at each query below. */
+
 /* Dark theme overrides */
 :root[data-theme="dark"] {
   --colors-canvas: #1b1b18;
