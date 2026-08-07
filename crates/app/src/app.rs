@@ -37,6 +37,10 @@ pub fn App() -> impl IntoView {
 
   let settings = expect_context::<SettingsState>();
 
+  // Mobile nav: the links collapse behind this menu button below the tablet
+  // breakpoint (see DESIGN.md "Breakpoints").
+  let (menu_open, set_menu_open) = signal(false);
+
   // Reflect the theme onto the document root so `:root[data-theme]` CSS applies.
   let theme_attr = move || settings.theme.get().as_attr();
   leptos::prelude::Effect::new(move |_| {
@@ -67,11 +71,27 @@ pub fn App() -> impl IntoView {
                                   </svg>
                                   "Lepo"
                               </a>
-                              <nav class="primary-nav-links">
+                              <button
+                                  class="nav-menu-btn"
+                                  aria-label="Toggle navigation"
+                                  aria-expanded=move || menu_open.get()
+                                  on:click=move |_| {
+                                      set_menu_open.update(|open| *open = !*open);
+                                  }
+                              >
+                                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                      <path d="M4 7h16M4 12h16M4 17h16"/>
+                                  </svg>
+                              </button>
+                              <nav
+                                  class="primary-nav-links"
+                                  class:nav-open=move || menu_open.get()
+                              >
                                   <a
                                       href="/"
                                       class="nav-link"
                                       class:active=move || location.pathname.get() == "/"
+                                      on:click=move |_| { set_menu_open.set(false); }
                                   >
                                       "Dashboard"
                                   </a>
@@ -79,6 +99,7 @@ pub fn App() -> impl IntoView {
                                       href="/settings"
                                       class="nav-link"
                                       class:active=move || location.pathname.get() == "/settings"
+                                      on:click=move |_| { set_menu_open.set(false); }
                                   >
                                       "Settings"
                                   </a>
