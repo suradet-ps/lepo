@@ -3,7 +3,7 @@
 use leptos::prelude::*;
 
 use crate::state::{
-  AuthState, RateLimitState, RefreshInterval, RepoRef, SettingsState, WatchlistState,
+  AuthState, RateLimitState, RefreshInterval, RepoRef, SettingsState, Theme, WatchlistState,
 };
 
 /// The settings page.
@@ -48,6 +48,13 @@ pub fn SettingsPage() -> impl IntoView {
       let _ = watchlist.save();
     }
   });
+
+  let set_theme = move |t: Theme| {
+    settings.theme.set(t);
+    if let Err(e) = settings.save_theme() {
+      leptos::logging::error!("failed to save theme: {e}");
+    }
+  };
 
   view! {
       <div class="page page--settings">
@@ -100,12 +107,47 @@ pub fn SettingsPage() -> impl IntoView {
                   <h2 class="heading-md">"Auto-refresh"</h2>
                   <div class="field">
                       <span class="field-label">"Refresh interval"</span>
-                      <select class="text-input" on:change=on_interval_change>
+                      <select
+                          class="text-input"
+                          prop:value=move || settings.refresh_interval.get().value()
+                          on:change=on_interval_change
+                      >
                           <option value="0">"Manual only"</option>
                           <option value="1">"Every 1 minute"</option>
                           <option value="5">"Every 5 minutes"</option>
                           <option value="15">"Every 15 minutes"</option>
                       </select>
+                  </div>
+              </section>
+
+              <section class="settings-section">
+                  <h2 class="heading-md">"Theme"</h2>
+                  <p class="body-sm">"Choose how Lepo looks."</p>
+                  <div class="theme-toggle">
+                      <button
+                          class=move || {
+                              if settings.theme.get() == Theme::Light {
+                                  "button-primary"
+                              } else {
+                                  "button-secondary"
+                              }
+                          }
+                          on:click=move |_| set_theme(Theme::Light)
+                      >
+                          "Light"
+                      </button>
+                      <button
+                          class=move || {
+                              if settings.theme.get() == Theme::Dark {
+                                  "button-primary"
+                              } else {
+                                  "button-secondary"
+                              }
+                          }
+                          on:click=move |_| set_theme(Theme::Dark)
+                      >
+                          "Dark"
+                      </button>
                   </div>
               </section>
           </div>
