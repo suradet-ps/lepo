@@ -224,6 +224,18 @@ by default.
 
 ## Layout
 
+### Breakpoints
+
+- **Mobile:** < 480px. Single column, collapsed nav, card view, secondary
+  row details hidden.
+- **Tablet:** 480–767px. Compact spacing, dashboard forced to card view.
+- **Desktop-small:** 768–1023px. Full nav and table restored.
+- **Desktop:** ≥ 1024px. Full experience (content max 1280px).
+
+Media queries use these exact pixel values — CSS custom properties cannot
+be used inside `@media`, so the values live in `style.css` under
+"Responsive breakpoints" and this section documents them.
+
 ### Grid
 
 - **Max width:** 1280px, centered.

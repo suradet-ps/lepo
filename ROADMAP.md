@@ -134,15 +134,21 @@ dark-first/sky-blue identity was reverted in `294d214`; needs a redo.
 Most developers check dashboards on desktop, but a quick phone check should
 work too.
 
-- [ ] **Breakpoint system.** Mobile, tablet, desktop-small, desktop.
-- [ ] **Table → card fallback.** The sortable table is unusable on small
-  screens. Force card view below tablet width.
-- [ ] **Responsive navigation.** Top nav on desktop; collapsed menu on
-  mobile.
-- [ ] **Touch targets.** All interactive elements meet WCAG AA sizing.
+- [x] **Breakpoint system.** Mobile (<480px), tablet (480–767px),
+  desktop-small (768–1023px), desktop (≥1024px). Documented in DESIGN.md
+  "Layout > Breakpoints", with the pixel values written out at each
+  `@media` query in `style.css`.
+- [x] **Table → card fallback.** The dashboard watches
+  `matchMedia("(max-width: 767px)")`, forces the card view below the
+  tablet breakpoint and hides the Table/Cards toggle.
+- [x] **Responsive navigation.** Hamburger button below 768px; the nav
+  links become a dropdown panel under the sticky header and close on
+  selection. Theme toggle + rate badge stay in the top row.
+- [x] **Touch targets.** `@media (pointer: coarse)` gives interactive
+  elements a 44px minimum height; desktop density is untouched.
 
 **Acceptance:** usable from phone to ultrawide; table auto-converts to
-cards on mobile.
+cards on mobile. ✅ Phase complete.
 
 ### 5. Keyboard navigation
 

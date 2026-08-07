@@ -86,6 +86,15 @@
   --content-max: 1280px;
 }
 
+/* ---------- Responsive breakpoints ----------
+   Documented in DESIGN.md "Layout > Breakpoints":
+     mobile       < 480px
+     tablet       480-767px
+     desktop-small 768-1023px
+     desktop      >= 1024px
+   CSS custom properties can't be used inside @media, so these exact
+   pixel values are repeated at each query below. */
+
 /* Dark theme overrides */
 :root[data-theme="dark"] {
   --colors-canvas: #1b1b18;
@@ -165,6 +174,7 @@ a:hover {
   border-bottom: 1px solid var(--colors-hairline);
 }
 .primary-nav-inner {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--spacing-xl);
@@ -233,6 +243,22 @@ a:hover {
   align-items: center;
   gap: var(--spacing-sm);
   padding-left: var(--spacing-md);
+}
+.nav-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--rounded-sm);
+  background: transparent;
+  color: var(--colors-ink);
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.nav-menu-btn:hover {
+  background: var(--colors-surface-card);
 }
 
 .app-main {
@@ -824,9 +850,7 @@ a:hover {
   background: var(--colors-canvas);
   color: var(--colors-ink);
   box-shadow: var(--shadow-sm);
-}
-
-.summary-strip {
+}.summary-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--spacing-md);
@@ -1020,19 +1044,103 @@ a:hover {
   margin-bottom: var(--spacing-md);
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 768px) {
+/* ---------- Responsive: tablet (max-width: 767px) ---------- */
+@media (max-width: 767px) {
   .app-main {
-    padding: var(--spacing-xl) var(--spacing-md) var(--spacing-section);
+    padding: var(--spacing-lg) var(--spacing-md) var(--spacing-xxl);
   }
-  .primary-nav {
-    padding: 0 var(--spacing-md);
-    gap: var(--spacing-md);
+  .heading-lg {
+    font-size: 28px;
   }
   .repo-grid {
     grid-template-columns: 1fr;
   }
-  .heading-lg {
-    font-size: 32px;
+  .view-toggle {
+    display: none;
+  }
+  .nav-menu-btn {
+    display: inline-flex;
+  }
+  .primary-nav-inner {
+    padding: 0 var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+  .primary-nav-rate {
+    padding-left: 0;
+    gap: var(--spacing-xs);
+  }
+  .primary-nav-links {
+    display: none;
+    position: absolute;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    background: var(--colors-canvas);
+    border-bottom: 1px solid var(--colors-hairline);
+    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+    gap: var(--spacing-xxs);
+  }
+  .primary-nav-links.nav-open {
+    display: flex;
+  }
+  .nav-link.active::after {
+    display: none;
+  }
+  .row {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+  .row-updated {
+    display: none;
+  }
+  .load-more {
+    width: 100%;
+  }
+}
+
+/* ---------- Responsive: mobile (max-width: 479px) ---------- */
+@media (max-width: 479px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dash-toolbar {
+    align-items: stretch;
+  }
+  .summary-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .row-comments {
+    display: none;
+  }
+  .page-login {
+    margin-top: var(--spacing-xxl);
+  }
+}
+
+/* ---------- Touch targets: coarse pointers (see DESIGN.md) ----------
+   WCAG AA minimum target size is 24px; 44px is the comfortable standard
+   for touch screens, applied only where the primary pointer is coarse so
+   desktop density is untouched. */
+@media (pointer: coarse) {
+  .nav-link,
+  .filter-chip,
+  .view-toggle button,
+  .theme-toggle,
+  .nav-menu-btn,
+  .load-more,
+  .button-primary,
+  .button-secondary,
+  .button-tertiary,
+  .text-input {
+    min-height: 44px;
+  }
+  .tabs .filter-chip {
+    padding-inline: 16px;
+  }
+  .row {
+    padding-block: var(--spacing-lg);
   }
 }
