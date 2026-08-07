@@ -28,7 +28,6 @@ git clone https://github.com/anomalyco/lepo
 cd lepo
 
 # Start the dev server with HMR (http://127.0.0.1:3000)
-cd crates/app
 trunk serve --port 3000 --open
 ```
 
@@ -48,10 +47,10 @@ cargo fmt --all --check
 cargo test --workspace --exclude app
 
 # Start the dev server with HMR (http://127.0.0.1:3000)
-cd crates/app && trunk serve --port 3000 --open
+trunk serve --port 3000 --open
 
-# Production build → crates/app/dist/
-cd crates/app && trunk build --release
+# Production build → dist/
+trunk build --release
 ```
 
 > CI (`.github/workflows/ci.yml`) runs `cargo check`, `cargo clippy`, `cargo fmt --check`,

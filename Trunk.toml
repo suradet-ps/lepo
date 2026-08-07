@@ -1,0 +1,24 @@
+# Trunk config for the Lepo workspace.
+#
+# This file must exist at the workspace root: without it, Trunk auto-detects
+# the workspace-root Cargo.toml as its config source and fails because a
+# virtual manifest has no root package. The Rust app is wired up in
+# index.html via `<link data-trunk rel="rust" href="crates/app/Cargo.toml"
+# data-bin="app" .../>`, so `trunk serve` / `trunk build` run from the root.
+
+[build]
+target = "index.html"
+dist = "dist"
+public_url = "/"
+release = true
+inject_scripts = true
+minify = "on_release"
+
+[watch]
+ignore = ["target", "dist"]
+
+[serve]
+addresses = ["127.0.0.1"]
+port = 3000
+open = false
+no_spa = false

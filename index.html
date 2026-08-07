@@ -21,7 +21,7 @@
     <title>Lepo — GitHub Repo Monitor</title>
 
     <!-- Favicon -->
-    <link data-trunk rel="icon" type="image/svg+xml" href="public/favicon.svg" />
+    <link data-trunk rel="icon" type="image/svg+xml" href="favicon.svg" />
 
     <!-- Inter font (Pin Sans substitute per DESIGN.md) — loaded without blocking first paint -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -45,10 +45,10 @@
     </noscript>
 
     <!-- Application styles -->
-    <link data-trunk rel="css" href="src/style.css" />
+    <link data-trunk rel="css" href="crates/app/src/style.css" />
 
     <!-- WASM entry point -->
-    <link data-trunk rel="rust" />
+    <link data-trunk rel="rust" href="crates/app/Cargo.toml" data-bin="app" />
   </head>
   <body></body>
 </html>

@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "trailingSlash": false,
 
-  "buildCommand": "cd crates/app && cargo install trunk --locked && rustup target add wasm32-unknown-unknown && trunk build --release",
-  "outputDirectory": "crates/app/dist",
+  "buildCommand": "cargo install trunk --locked && rustup target add wasm32-unknown-unknown && trunk build --release",
+  "outputDirectory": "dist",
 
   "rewrites": [
     {

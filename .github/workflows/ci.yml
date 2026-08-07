@@ -95,5 +95,4 @@ jobs:
         run: cargo install trunk --locked
 
       - name: Build
-        working-directory: crates/app
         run: trunk build --release
