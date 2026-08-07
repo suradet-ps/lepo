@@ -1088,6 +1088,36 @@ a:hover {
   .nav-link.active::after {
     display: none;
   }
+  .row {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+  .row-updated {
+    display: none;
+  }
+  .load-more {
+    width: 100%;
+  }
+}
+
+/* ---------- Responsive: mobile (max-width: 479px) ---------- */
+@media (max-width: 479px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dash-toolbar {
+    align-items: stretch;
+  }
+  .summary-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .row-comments {
+    display: none;
+  }
+  .page-login {
+    margin-top: var(--spacing-xxl);
+  }
 }
 
 /* ---------- Touch targets: coarse pointers (see DESIGN.md) ----------
