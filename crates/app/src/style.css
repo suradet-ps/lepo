@@ -620,24 +620,6 @@ a:hover {
   color: var(--colors-ash);
   font: var(--typography-caption-md);
 }
-.row-skeleton {
-  pointer-events: none;
-}
-.row-skeleton .row-num .skeleton {
-  width: 36px;
-}
-.row-skeleton .row-labels .skeleton {
-  width: 60px;
-}
-.row-skeleton .row-author .skeleton {
-  width: 64px;
-}
-.row-skeleton .row-comments .skeleton {
-  width: 50px;
-}
-.row-skeleton .row-title {
-  flex: 1;
-}
 
 /* ---------- Filter & tab chips ---------- */
 .filter-chip {
@@ -862,10 +844,6 @@ a:hover {
   letter-spacing: -0.6px;
   font-variant-numeric: tabular-nums;
 }
-.summary-value.skeleton {
-  height: 24px;
-  border-radius: var(--rounded-sm);
-}
 .summary-label {
   font: var(--typography-caption-md);
   color: var(--colors-mute);
@@ -996,69 +974,12 @@ a:hover {
   background: var(--colors-ash);
 }
 
-/* ---------- Skeleton loading ---------- */
-.skeleton {
-  position: relative;
-  overflow: hidden;
-  background: var(--colors-secondary-bg);
-  border-radius: var(--rounded-sm);
-}
-.skeleton::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--colors-canvas) 60%, transparent),
-    transparent
-  );
-  animation: skeleton-shimmer 1.4s infinite;
-}
-@keyframes skeleton-shimmer {
-  100% {
-    transform: translateX(100%);
-  }
-}
-.skeleton-card {
-  background: var(--colors-surface-card);
-  border: 1px solid var(--colors-hairline);
-  border-radius: var(--rounded-md);
-  padding: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-.skeleton-line {
-  display: block;
-  height: 14px;
-  width: 100%;
-}
-.skeleton-line--lg {
-  height: 28px;
-  width: 60%;
-}
-.skeleton-line--sm {
-  height: 10px;
-  width: 40%;
-}
-.repo-table .skeleton-line {
-  width: 80%;
-}
-.repo-table td .skeleton-line--sm {
-  width: 60%;
-}
-.summary-strip .skeleton-line--sm {
-  width: 70%;
-}
-.skeleton-block {
-  height: 40px;
-  width: 100%;
-}
-.skeleton-row {
-  height: 56px;
-  border-radius: var(--rounded-md);
+/* ---------- Loading state ---------- */
+.loading-text {
+  color: var(--colors-mute);
+  font: var(--typography-body-md);
+  text-align: center;
+  padding: var(--spacing-section) 0;
 }
 
 /* ---------- Empty / error states ---------- */

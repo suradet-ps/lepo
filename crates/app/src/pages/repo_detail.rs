@@ -357,15 +357,7 @@ pub fn RepoDetailPage() -> impl IntoView {
                   if loading && empty {
                       view! {
                           <div class="row-list">
-                              {(0..5).map(|_| view! {
-                                  <div class="row row--issue row-skeleton">
-                                      <span class="row-num"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-title"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-labels"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-author"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-comments"><span class="skeleton skeleton-line"></span></span>
-                                  </div>
-                              }).collect_view()}
+                              <p class="loading-text">"Loading issues…"</p>
                           </div>
                       }.into_any()
                   } else if !empty {
@@ -434,15 +426,7 @@ pub fn RepoDetailPage() -> impl IntoView {
                   if loading && empty {
                       view! {
                           <div class="row-list">
-                              {(0..5).map(|_| view! {
-                                  <div class="row row--pr row-skeleton">
-                                      <span class="row-num"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-title"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-labels"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-author"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-comments"><span class="skeleton skeleton-line"></span></span>
-                                  </div>
-                              }).collect_view()}
+                              <p class="loading-text">"Loading pull requests…"</p>
                           </div>
                       }.into_any()
                   } else if !empty {
