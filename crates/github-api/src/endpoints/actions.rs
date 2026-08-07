@@ -1,10 +1,11 @@
 //! `GET /repos/{owner}/{repo}/actions/runs?per_page=1` endpoint.
 
-use gloo_net::http::{Headers, Request};
+use gloo_net::http::Headers;
 use models::WorkflowRun;
 
 use crate::client::{HeaderCapture, headers_to_map, map_status};
 use crate::error::ApiError;
+use crate::http;
 
 /// A workflow runs list response wraps the runs in a `workflow_runs` array.
 #[derive(serde::Deserialize)]
@@ -21,11 +22,7 @@ pub async fn latest_workflow_run(
   capture: &HeaderCapture<'_>,
 ) -> Result<Option<WorkflowRun>, ApiError> {
   let url = format!("{base}/repos/{owner}/{repo}/actions/runs?per_page=1");
-  let resp = Request::get(&url)
-    .headers(headers)
-    .send()
-    .await
-    .map_err(|e| ApiError::Request(e.to_string()))?;
+  let resp = http::get(&url, headers).await?;
   let h = resp.headers();
   let hm = headers_to_map(&h);
   map_status(resp.status(), &hm, "workflow runs not found")?;

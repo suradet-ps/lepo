@@ -8,6 +8,7 @@
 pub mod client;
 pub mod endpoints;
 pub mod error;
+pub mod http;
 pub mod pagination;
 
 pub use client::{GithubApi, GithubClient};

@@ -548,7 +548,9 @@ name = "github-api"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "futures",
  "gloo-net",
+ "gloo-timers",
  "models",
  "serde",
  "serde_json",

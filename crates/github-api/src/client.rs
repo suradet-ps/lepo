@@ -175,11 +175,7 @@ impl GithubApi for GithubClient {
   async fn rate_limit(&self) -> Result<RateLimit, ApiError> {
     let headers = self.auth_headers();
     let url = format!("{BASE_URL}/rate_limit");
-    let resp = gloo_net::http::Request::get(&url)
-      .headers(headers)
-      .send()
-      .await
-      .map_err(|e| ApiError::Request(e.to_string()))?;
+    let resp = crate::http::get(&url, headers).await?;
     let h = resp.headers();
     let hm = headers_to_map(&h);
     map_status(resp.status(), &hm, "rate_limit failed")?;

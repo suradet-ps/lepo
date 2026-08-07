@@ -16,5 +16,11 @@ thiserror.workspace = true
 chrono.workspace = true
 # wasm HTTP client — compiles on wasm32 and (with the wasm-bindgen backend) natively
 gloo-net.workspace = true
+# used to race requests against a timeout (http.rs); compiles on native too
+futures.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# wasm-only: provides TimeoutFuture for the request timeout (http.rs)
+gloo-timers = { version = "0.3", features = ["futures"] }
 
 [dev-dependencies]
