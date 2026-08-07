@@ -55,10 +55,16 @@ pub fn RepoDetailPage() -> impl IntoView {
   let issues_items = RwSignal::<Vec<Issue>>::new(Vec::new());
   let issues_next = RwSignal::<Option<String>>::new(None);
   let issues_loading = RwSignal::new(false);
+  // Bumped on every fetch start; responses only apply their writes when the
+  // generation still matches, so out-of-order responses cannot clobber newer
+  // ones (e.g. after a quick filter change).
+  let issues_gen = RwSignal::new(0_u32);
 
   // Fetches one page of issues. `next_url` is `None` for the first page.
   let fetch_issues = {
     move |next_url: Option<String>| {
+      issues_gen.update(|g| *g += 1);
+      let generation = issues_gen.get_untracked();
       let auth = auth;
       let rate_limit = rate_limit;
       let r#ref = r#ref;
@@ -70,7 +76,12 @@ pub fn RepoDetailPage() -> impl IntoView {
         let r = r#ref.get();
         let client = match auth.client() {
           Some(c) => c,
-          None => return,
+          None => {
+            if issues_gen.get_untracked() == generation {
+              issues_loading.set(false);
+            }
+            return;
+          }
         };
 
         let result = if let Some(ref url) = next_url {
@@ -82,7 +93,9 @@ pub fn RepoDetailPage() -> impl IntoView {
               (items, Pagination { next: pagination.next, last: None })
             }
             Err(_) => {
-              issues_loading.set(false);
+              if issues_gen.get_untracked() == generation {
+                issues_loading.set(false);
+              }
               return;
             }
           }
@@ -107,20 +120,24 @@ pub fn RepoDetailPage() -> impl IntoView {
               (v, p)
             }
             Err(_) => {
-              issues_loading.set(false);
+              if issues_gen.get_untracked() == generation {
+                issues_loading.set(false);
+              }
               return;
             }
           }
         };
 
-        let (items, pagination) = result;
-        if next_url.is_none() {
-          issues_items.set(items);
-        } else {
-          issues_items.update(|v| v.extend(items));
+        if issues_gen.get_untracked() == generation {
+          let (items, pagination) = result;
+          if next_url.is_none() {
+            issues_items.set(items);
+          } else {
+            issues_items.update(|v| v.extend(items));
+          }
+          issues_next.set(pagination.next);
+          issues_loading.set(false);
         }
-        issues_next.set(pagination.next);
-        issues_loading.set(false);
       }
     }
   };
@@ -145,9 +162,12 @@ pub fn RepoDetailPage() -> impl IntoView {
   let pulls_items = RwSignal::<Vec<models::PullRequest>>::new(Vec::new());
   let pulls_next = RwSignal::<Option<String>>::new(None);
   let pulls_loading = RwSignal::new(false);
+  let pulls_gen = RwSignal::new(0_u32);
 
   let fetch_pulls = {
     move |next_url: Option<String>| {
+      pulls_gen.update(|g| *g += 1);
+      let generation = pulls_gen.get_untracked();
       let auth = auth;
       let rate_limit = rate_limit;
       let r#ref = r#ref;
@@ -157,7 +177,12 @@ pub fn RepoDetailPage() -> impl IntoView {
         let r = r#ref.get();
         let client = match auth.client() {
           Some(c) => c,
-          None => return,
+          None => {
+            if pulls_gen.get_untracked() == generation {
+              pulls_loading.set(false);
+            }
+            return;
+          }
         };
 
         let result = if let Some(ref url) = next_url {
@@ -167,7 +192,9 @@ pub fn RepoDetailPage() -> impl IntoView {
               (items, Pagination { next: pagination.next, last: None })
             }
             Err(_) => {
-              pulls_loading.set(false);
+              if pulls_gen.get_untracked() == generation {
+                pulls_loading.set(false);
+              }
               return;
             }
           }
@@ -183,20 +210,24 @@ pub fn RepoDetailPage() -> impl IntoView {
               (v, p)
             }
             Err(_) => {
-              pulls_loading.set(false);
+              if pulls_gen.get_untracked() == generation {
+                pulls_loading.set(false);
+              }
               return;
             }
           }
         };
 
-        let (items, pagination) = result;
-        if next_url.is_none() {
-          pulls_items.set(items);
-        } else {
-          pulls_items.update(|v| v.extend(items));
+        if pulls_gen.get_untracked() == generation {
+          let (items, pagination) = result;
+          if next_url.is_none() {
+            pulls_items.set(items);
+          } else {
+            pulls_items.update(|v| v.extend(items));
+          }
+          pulls_next.set(pagination.next);
+          pulls_loading.set(false);
         }
-        pulls_next.set(pagination.next);
-        pulls_loading.set(false);
       }
     }
   };
@@ -467,3 +498,5 @@ impl SortKey {
     }
   }
 }
+
+
