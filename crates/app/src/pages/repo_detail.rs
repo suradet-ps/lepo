@@ -55,6 +55,7 @@ pub fn RepoDetailPage() -> impl IntoView {
   let issues_items = RwSignal::<Vec<Issue>>::new(Vec::new());
   let issues_next = RwSignal::<Option<String>>::new(None);
   let issues_loading = RwSignal::new(false);
+  let issues_error = RwSignal::new(Option::<String>::None);
   // Bumped on every fetch start; responses only apply their writes when the
   // generation still matches, so out-of-order responses cannot clobber newer
   // ones (e.g. after a quick filter change).
@@ -65,6 +66,7 @@ pub fn RepoDetailPage() -> impl IntoView {
     move |next_url: Option<String>| {
       issues_gen.update(|g| *g += 1);
       let generation = issues_gen.get_untracked();
+      issues_loading.set(true);
       let auth = auth;
       let rate_limit = rate_limit;
       let r#ref = r#ref;
@@ -78,6 +80,7 @@ pub fn RepoDetailPage() -> impl IntoView {
           Some(c) => c,
           None => {
             if issues_gen.get_untracked() == generation {
+              issues_error.set(Some("not authenticated".into()));
               issues_loading.set(false);
             }
             return;
@@ -92,14 +95,16 @@ pub fn RepoDetailPage() -> impl IntoView {
               items.retain(|i: &Issue| !i.is_pr());
               (items, Pagination { next: pagination.next, last: None })
             }
-            Err(_) => {
+            Err(e) => {
               if issues_gen.get_untracked() == generation {
+                issues_error.set(Some(e.to_string()));
                 issues_loading.set(false);
               }
               return;
             }
           }
         } else {
+          issues_error.set(None);
           let params = IssueParams {
             state: state_filter.get().as_str().into(),
             labels: label_filter
@@ -119,8 +124,9 @@ pub fn RepoDetailPage() -> impl IntoView {
               v.retain(|i| !i.is_pr());
               (v, p)
             }
-            Err(_) => {
+            Err(e) => {
               if issues_gen.get_untracked() == generation {
+                issues_error.set(Some(e.to_string()));
                 issues_loading.set(false);
               }
               return;
@@ -136,6 +142,7 @@ pub fn RepoDetailPage() -> impl IntoView {
             issues_items.update(|v| v.extend(items));
           }
           issues_next.set(pagination.next);
+          issues_error.set(None);
           issues_loading.set(false);
         }
       }
@@ -151,7 +158,6 @@ pub fn RepoDetailPage() -> impl IntoView {
     let _author = author_filter.get();
     let _sort = sort_key.get();
     if current_tab == Tab::Issues {
-      issues_loading.set(true);
       let fut = fetch_issues(None);
       spawn_local(fut);
     }
@@ -162,12 +168,14 @@ pub fn RepoDetailPage() -> impl IntoView {
   let pulls_items = RwSignal::<Vec<models::PullRequest>>::new(Vec::new());
   let pulls_next = RwSignal::<Option<String>>::new(None);
   let pulls_loading = RwSignal::new(false);
+  let pulls_error = RwSignal::new(Option::<String>::None);
   let pulls_gen = RwSignal::new(0_u32);
 
   let fetch_pulls = {
     move |next_url: Option<String>| {
       pulls_gen.update(|g| *g += 1);
       let generation = pulls_gen.get_untracked();
+      pulls_loading.set(true);
       let auth = auth;
       let rate_limit = rate_limit;
       let r#ref = r#ref;
@@ -179,6 +187,7 @@ pub fn RepoDetailPage() -> impl IntoView {
           Some(c) => c,
           None => {
             if pulls_gen.get_untracked() == generation {
+              pulls_error.set(Some("not authenticated".into()));
               pulls_loading.set(false);
             }
             return;
@@ -191,14 +200,16 @@ pub fn RepoDetailPage() -> impl IntoView {
               rate_limit.update(&client);
               (items, Pagination { next: pagination.next, last: None })
             }
-            Err(_) => {
+            Err(e) => {
               if pulls_gen.get_untracked() == generation {
+                pulls_error.set(Some(e.to_string()));
                 pulls_loading.set(false);
               }
               return;
             }
           }
         } else {
+          pulls_error.set(None);
           let params = PullParams {
             state: state_filter.get().as_str().into(),
             sort: sort_key.get().as_api_str().into(),
@@ -209,8 +220,9 @@ pub fn RepoDetailPage() -> impl IntoView {
               rate_limit.update(&client);
               (v, p)
             }
-            Err(_) => {
+            Err(e) => {
               if pulls_gen.get_untracked() == generation {
+                pulls_error.set(Some(e.to_string()));
                 pulls_loading.set(false);
               }
               return;
@@ -226,6 +238,7 @@ pub fn RepoDetailPage() -> impl IntoView {
             pulls_items.update(|v| v.extend(items));
           }
           pulls_next.set(pagination.next);
+          pulls_error.set(None);
           pulls_loading.set(false);
         }
       }
@@ -238,7 +251,6 @@ pub fn RepoDetailPage() -> impl IntoView {
     let _state = state_filter.get();
     let _sort = sort_key.get();
     if current_tab == Tab::Pulls {
-      pulls_loading.set(true);
       let fut = fetch_pulls(None);
       spawn_local(fut);
     }
@@ -329,16 +341,17 @@ pub fn RepoDetailPage() -> impl IntoView {
                   let empty = items.is_empty();
                   let loading = issues_loading.get();
                   let has_more = issues_next.get().is_some();
+                  let error = issues_error.get();
                   if loading && empty {
                       view! {
                           <div class="row-list">
                               {(0..5).map(|_| view! {
                                   <div class="row row--issue row-skeleton">
-                                      <span class="row-num"><span class="skeleton skeleton-line" style="width:36px"></span></span>
+                                      <span class="row-num"><span class="skeleton skeleton-line"></span></span>
                                       <span class="row-title"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-labels"><span class="skeleton skeleton-line" style="width:60px"></span></span>
-                                      <span class="row-author"><span class="skeleton skeleton-line" style="width:64px"></span></span>
-                                      <span class="row-comments"><span class="skeleton skeleton-line" style="width:50px"></span></span>
+                                      <span class="row-labels"><span class="skeleton skeleton-line"></span></span>
+                                      <span class="row-author"><span class="skeleton skeleton-line"></span></span>
+                                      <span class="row-comments"><span class="skeleton skeleton-line"></span></span>
                                   </div>
                               }).collect_view()}
                           </div>
@@ -357,7 +370,6 @@ pub fn RepoDetailPage() -> impl IntoView {
                                           class="button-secondary load-more"
                                           disabled=move || loading
                                           on:click=move |_| {
-                                              issues_loading.set(true);
                                               let fut = fetch_issues(issues_next.get());
                                               spawn_local(fut);
                                           }
@@ -375,6 +387,18 @@ pub fn RepoDetailPage() -> impl IntoView {
                               } else {
                                   ().into_any()
                               }}
+                              {if let Some(msg) = error {
+                                  view! { <p class="row-error">{msg}</p> }.into_any()
+                              } else {
+                                  ().into_any()
+                              }}
+                          </div>
+                      }.into_any()
+                  } else if let Some(msg) = error {
+                      view! {
+                          <div class="error-state">
+                              <p class="body-strong">"Couldn't load issues"</p>
+                              <p class="body-sm">{msg}</p>
                           </div>
                       }.into_any()
                   } else {
@@ -394,16 +418,17 @@ pub fn RepoDetailPage() -> impl IntoView {
                   let empty = items.is_empty();
                   let loading = pulls_loading.get();
                   let has_more = pulls_next.get().is_some();
+                  let error = pulls_error.get();
                   if loading && empty {
                       view! {
                           <div class="row-list">
                               {(0..5).map(|_| view! {
                                   <div class="row row--pr row-skeleton">
-                                      <span class="row-num"><span class="skeleton skeleton-line" style="width:36px"></span></span>
+                                      <span class="row-num"><span class="skeleton skeleton-line"></span></span>
                                       <span class="row-title"><span class="skeleton skeleton-line"></span></span>
-                                      <span class="row-labels"><span class="skeleton skeleton-line" style="width:60px"></span></span>
-                                      <span class="row-author"><span class="skeleton skeleton-line" style="width:64px"></span></span>
-                                      <span class="row-comments"><span class="skeleton skeleton-line" style="width:50px"></span></span>
+                                      <span class="row-labels"><span class="skeleton skeleton-line"></span></span>
+                                      <span class="row-author"><span class="skeleton skeleton-line"></span></span>
+                                      <span class="row-comments"><span class="skeleton skeleton-line"></span></span>
                                   </div>
                               }).collect_view()}
                           </div>
@@ -422,7 +447,6 @@ pub fn RepoDetailPage() -> impl IntoView {
                                           class="button-secondary load-more"
                                           disabled=move || loading
                                           on:click=move |_| {
-                                              pulls_loading.set(true);
                                               let fut = fetch_pulls(pulls_next.get());
                                               spawn_local(fut);
                                           }
@@ -440,13 +464,25 @@ pub fn RepoDetailPage() -> impl IntoView {
                               } else {
                                   ().into_any()
                               }}
+                              {if let Some(msg) = error {
+                                  view! { <p class="row-error">{msg}</p> }.into_any()
+                              } else {
+                                  ().into_any()
+                              }}
+                          </div>
+                      }.into_any()
+                  } else if let Some(msg) = error {
+                      view! {
+                          <div class="error-state">
+                              <p class="body-strong">"Couldn't load pull requests"</p>
+                              <p class="body-sm">{msg}</p>
                           </div>
                       }.into_any()
                   } else {
                       view! {
                           <div class="empty-state">
                               <p class="body-strong">"No pull requests"</p>
-                              <p class="body-sm">"This repository has no open pull requests."</p>
+                              <p class="body-sm">"This repository has no pull requests matching the current filter."</p>
                           </div>
                       }.into_any()
                   }

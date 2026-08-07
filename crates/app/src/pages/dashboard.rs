@@ -53,6 +53,8 @@ pub fn DashboardPage() -> impl IntoView {
 
   // Auto-refresh: a version counter that triggers re-fetch when bumped.
   let (refresh_version, set_refresh_version) = signal(0_u32);
+  // Number of repos whose entire bundle failed to load on the last fetch.
+  let (failed_repos, set_failed_repos) = signal(0_usize);
 
   // Wire the configured RefreshInterval to an actual timer.
   // The effect only tracks the interval setting; the tick closure reads the
@@ -146,6 +148,7 @@ pub fn DashboardPage() -> impl IntoView {
     let watchlist = watchlist;
     let _tick = refresh_version.get(); // re-fetch when auto-refresh fires
     async move {
+      set_failed_repos.set(0);
       let repos = watchlist.repos.get();
       let client = match auth.client() {
         Some(c) => c,
@@ -159,16 +162,21 @@ pub fn DashboardPage() -> impl IntoView {
         .await
         .into_iter()
         .enumerate()
-        .map(|(i, bundle)| RepoCardData {
-          r#ref: repos[i].clone(),
-          repo: bundle.repo,
-          issues: bundle.issues,
-          pulls: bundle.pulls,
-          ci: bundle.ci,
-          total_open_issues: bundle.total_open_issues,
-          total_open_prs: bundle.total_open_prs,
-          open_issues_estimate: bundle.open_issues_estimate,
-          open_prs_estimate: bundle.open_prs_estimate,
+        .map(|(i, bundle)| {
+          if bundle.all_failed {
+            set_failed_repos.update(|n| *n += 1);
+          }
+          RepoCardData {
+            r#ref: repos[i].clone(),
+            repo: bundle.repo,
+            issues: bundle.issues,
+            pulls: bundle.pulls,
+            ci: bundle.ci,
+            total_open_issues: bundle.total_open_issues,
+            total_open_prs: bundle.total_open_prs,
+            open_issues_estimate: bundle.open_issues_estimate,
+            open_prs_estimate: bundle.open_prs_estimate,
+          }
         })
         .collect();
       rate_limit.update(&client);
@@ -267,6 +275,17 @@ pub fn DashboardPage() -> impl IntoView {
               add_success
                   .get()
                   .map(|msg| view! { <span class="add-repo-success">{msg}</span> })
+          }}
+
+          {move || {
+              let n = failed_repos.get();
+              (n > 0).then(|| {
+                  view! {
+                      <div class="dash-error">
+                          "Couldn't refresh {n} repo(s) — check the token, its scopes, and the rate limit."
+                      </div>
+                  }
+              })
           }}
 
           <Transition
@@ -538,6 +557,9 @@ struct RepoBundle {
   total_open_prs: usize,
   open_issues_estimate: bool,
   open_prs_estimate: bool,
+  /// True when every sub-request for this repo failed (likely an auth or
+  /// rate-limit problem affecting the whole dashboard).
+  all_failed: bool,
 }
 
 /// Fetches metadata, issues, pulls, and latest CI run for one repo,
@@ -556,6 +578,7 @@ async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
   let ci_fut = client.latest_workflow_run(&r.owner, &r.name);
 
   let (repo, issues, pulls, ci) = futures::join!(repo_fut, issues_fut, pulls_fut, ci_fut,);
+  let all_failed = repo.is_err() && issues.is_err() && pulls.is_err() && ci.is_err();
 
   let per_page = 30_usize;
 
@@ -594,6 +617,7 @@ async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
     total_open_prs,
     open_issues_estimate,
     open_prs_estimate,
+    all_failed,
   }
 }
 
