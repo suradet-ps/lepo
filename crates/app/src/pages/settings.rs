@@ -1,9 +1,9 @@
-//! Settings page: manage token, watchlist, refresh interval, theme (AGENTS §5.6).
+//! Settings page: manage token, watchlist, refresh interval (AGENTS §5.6).
 
 use leptos::prelude::*;
 
 use crate::state::{
-  AuthState, RateLimitState, RefreshInterval, RepoRef, SettingsState, Theme, WatchlistState,
+  AuthState, RateLimitState, RefreshInterval, RepoRef, SettingsState, WatchlistState,
 };
 
 /// The settings page.
@@ -48,13 +48,6 @@ pub fn SettingsPage() -> impl IntoView {
       let _ = watchlist.save();
     }
   });
-
-  let set_theme = move |t: Theme| {
-    settings.theme.set(t);
-    if let Err(e) = settings.save_theme() {
-      leptos::logging::error!("failed to save theme: {e}");
-    }
-  };
 
   view! {
       <div class="page page--settings">
@@ -117,37 +110,6 @@ pub fn SettingsPage() -> impl IntoView {
                           <option value="5">"Every 5 minutes"</option>
                           <option value="15">"Every 15 minutes"</option>
                       </select>
-                  </div>
-              </section>
-
-              <section class="settings-section">
-                  <h2 class="heading-md">"Theme"</h2>
-                  <p class="body-sm">"Choose how Lepo looks."</p>
-                  <div class="theme-picker">
-                      <button
-                          class=move || {
-                              if settings.theme.get() == Theme::Light {
-                                  "button-primary"
-                              } else {
-                                  "button-secondary"
-                              }
-                          }
-                          on:click=move |_| set_theme(Theme::Light)
-                      >
-                          "Light"
-                      </button>
-                      <button
-                          class=move || {
-                              if settings.theme.get() == Theme::Dark {
-                                  "button-primary"
-                              } else {
-                                  "button-secondary"
-                              }
-                          }
-                          on:click=move |_| set_theme(Theme::Dark)
-                      >
-                          "Dark"
-                      </button>
                   </div>
               </section>
           </div>

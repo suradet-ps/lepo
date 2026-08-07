@@ -639,11 +639,6 @@ a:hover {
   flex: 1;
 }
 
-.theme-picker {
-  display: flex;
-  gap: var(--spacing-sm);
-}
-
 /* ---------- Filter & tab chips ---------- */
 .filter-chip {
   background: transparent;
