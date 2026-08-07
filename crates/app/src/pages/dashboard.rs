@@ -44,6 +44,25 @@ pub fn DashboardPage() -> impl IntoView {
 
   // View / filter / sort state.
   let (view_mode, set_view_mode) = signal(ViewMode::Table);
+
+  // Below the tablet breakpoint (767px, DESIGN.md "Breakpoints") the table
+  // is unusable, so the dashboard forces the card view and the toggle is
+  // hidden via CSS. Resizing back up restores the user's choice.
+  let (is_compact, set_is_compact) = signal(false);
+  leptos::prelude::Effect::new(move |_| {
+    if is_compact.get() {
+      set_view_mode.set(ViewMode::Cards);
+    }
+  });
+  if let Ok(Some(mql)) = window().match_media("(max-width: 767px)") {
+    set_is_compact.set(mql.matches());
+    let listener = mql.clone();
+    let cb = Closure::<dyn FnMut()>::new(move || set_is_compact.set(listener.matches()));
+    let _ = mql.add_event_listener_with_callback("change", cb.as_ref().unchecked_ref());
+    // The closure is not Send+Sync, so it can't be stored for on_cleanup;
+    // forget() keeps it alive for the page lifetime (one per mount).
+    cb.forget();
+  }
   let (query, set_query) = signal(String::new());
   let (sort_key, set_sort_key) = signal(SortKey::Name);
   let (sort_asc, set_sort_asc) = signal(true);

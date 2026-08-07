@@ -833,9 +833,7 @@ a:hover {
   background: var(--colors-canvas);
   color: var(--colors-ink);
   box-shadow: var(--shadow-sm);
-}
-
-.summary-strip {
+}.summary-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--spacing-md);
@@ -1029,19 +1027,18 @@ a:hover {
   margin-bottom: var(--spacing-md);
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 768px) {
+/* ---------- Responsive: tablet (max-width: 767px) ---------- */
+@media (max-width: 767px) {
   .app-main {
-    padding: var(--spacing-xl) var(--spacing-md) var(--spacing-section);
+    padding: var(--spacing-lg) var(--spacing-md) var(--spacing-xxl);
   }
-  .primary-nav {
-    padding: 0 var(--spacing-md);
-    gap: var(--spacing-md);
+  .heading-lg {
+    font-size: 28px;
   }
   .repo-grid {
     grid-template-columns: 1fr;
   }
-  .heading-lg {
-    font-size: 32px;
+  .view-toggle {
+    display: none;
   }
 }
