@@ -1,6 +1,6 @@
 //! Centralized localStorage access. All keys for the app live here so they can
-//! be cleared consistently (e.g. on logout). No other module reads/writes
-//! storage keys directly.
+//! be managed consistently. No other module reads/writes storage keys
+//! directly.
 
 use gloo_storage::{LocalStorage, Storage};
 use leptos::logging::error;

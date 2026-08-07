@@ -56,10 +56,11 @@ impl AuthState {
     Ok(user)
   }
 
-  /// Clears the token and resets status (logout). Also clears rate-limit state
-  /// via [`crate::state::RateLimitState::reset`].
+  /// Clears the token and resets status (logout). Only the token key is
+  /// removed so the watchlist and settings survive a logout. Callers reset
+  /// [`crate::state::RateLimitState`] themselves.
   pub fn logout(&self) {
-    storage::clear_all();
+    storage::remove(storage::KEY_TOKEN);
     self.token.set(None);
     self.status.set(AuthStatus::LoggedOut);
   }
