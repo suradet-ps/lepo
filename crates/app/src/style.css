@@ -592,11 +592,25 @@ a:hover {
   padding: 2px 8px;
 }
 .row-author {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   font: var(--typography-small);
   color: var(--colors-mute);
   flex: 0 0 auto;
 }
+.row-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--rounded-full);
+  object-fit: cover;
+}
 .row-comments {
+  font: var(--typography-small);
+  color: var(--colors-mute);
+  flex: 0 0 auto;
+}
+.row-updated {
   font: var(--typography-small);
   color: var(--colors-mute);
   flex: 0 0 auto;
