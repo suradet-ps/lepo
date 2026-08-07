@@ -55,7 +55,9 @@ pub fn DashboardPage() -> impl IntoView {
   let (refresh_version, set_refresh_version) = signal(0_u32);
 
   // Wire the configured RefreshInterval to an actual timer.
-  // Uses Arc<AtomicI32> for the JS interval ID (Send+Sync for on_cleanup).
+  // The effect only tracks the interval setting; the tick closure reads the
+  // token and rate limit untracked, so responses from other pages never
+  // restart the countdown.
   {
     let current_id: std::sync::Arc<std::sync::atomic::AtomicI32> =
       std::sync::Arc::new(std::sync::atomic::AtomicI32::new(0));
@@ -74,26 +76,26 @@ pub fn DashboardPage() -> impl IntoView {
         }
 
         if let Some(seconds) = interval.seconds() {
-          // Pause auto-refresh when rate limit is nearly exhausted (< 10 remaining).
-          let should_pause = rate_limit.limit.get().is_some_and(|rl| rl.remaining < 10);
-
-          if !should_pause {
-            let millis = (seconds * 1000) as i32;
-            if let Some(win) = web_sys::window() {
-              let closure = Closure::wrap(Box::new(move || {
-                let has_token = auth.token.get().is_some();
-                let rate_ok = rate_limit.limit.get().is_none_or(|rl| rl.remaining > 10);
-                if has_token && rate_ok {
-                  set_refresh_version.update(|v| *v += 1);
-                }
-              }) as Box<dyn FnMut()>);
-              if let Ok(id) = win.set_interval_with_callback_and_timeout_and_arguments_0(
-                closure.as_ref().unchecked_ref(),
-                millis,
-              ) {
-                closure.forget();
-                current_id.store(id, std::sync::atomic::Ordering::SeqCst);
+          let millis = (seconds * 1000) as i32;
+          if let Some(win) = web_sys::window() {
+            let closure = Closure::wrap(Box::new(move || {
+              let has_token = auth.token.get_untracked().is_some();
+              // Pause while the rate limit is nearly exhausted (< 10 remaining);
+              // the next tick resumes automatically once it recovers.
+              let rate_ok = rate_limit
+                .limit
+                .get_untracked()
+                .is_none_or(|rl| rl.remaining > 10);
+              if has_token && rate_ok {
+                set_refresh_version.update(|v| *v += 1);
               }
+            }) as Box<dyn FnMut()>);
+            if let Ok(id) = win.set_interval_with_callback_and_timeout_and_arguments_0(
+              closure.as_ref().unchecked_ref(),
+              millis,
+            ) {
+              closure.forget();
+              current_id.store(id, std::sync::atomic::Ordering::SeqCst);
             }
           }
         }
