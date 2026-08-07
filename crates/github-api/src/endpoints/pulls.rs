@@ -43,7 +43,12 @@ mod tests {
 
   #[test]
   fn pulls_url_includes_default_query() {
-    let url = pulls_url("https://api.github.com", "rust-lang", "lepo", &PullParams::default());
+    let url = pulls_url(
+      "https://api.github.com",
+      "rust-lang",
+      "lepo",
+      &PullParams::default(),
+    );
     assert_eq!(
       url,
       "https://api.github.com/repos/rust-lang/lepo/pulls?state=open&per_page=30&sort=updated"

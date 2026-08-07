@@ -44,7 +44,12 @@ mod tests {
 
   #[test]
   fn issues_url_includes_default_query() {
-    let url = issues_url("https://api.github.com", "rust-lang", "lepo", &IssueParams::default());
+    let url = issues_url(
+      "https://api.github.com",
+      "rust-lang",
+      "lepo",
+      &IssueParams::default(),
+    );
     assert_eq!(
       url,
       "https://api.github.com/repos/rust-lang/lepo/issues?state=open&per_page=30&sort=updated"

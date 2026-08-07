@@ -63,7 +63,10 @@ mod tests {
 
   #[test]
   fn user_url_points_at_the_user_endpoint() {
-    assert_eq!(user_url("https://api.github.com"), "https://api.github.com/user");
+    assert_eq!(
+      user_url("https://api.github.com"),
+      "https://api.github.com/user"
+    );
   }
 
   #[test]

@@ -93,7 +93,13 @@ pub fn RepoDetailPage() -> impl IntoView {
               rate_limit.update(&client);
               // Filter PRs out — GitHub's issues endpoint returns PRs too.
               items.retain(|i: &Issue| !i.is_pr());
-              (items, Pagination { next: pagination.next, last: None })
+              (
+                items,
+                Pagination {
+                  next: pagination.next,
+                  last: None,
+                },
+              )
             }
             Err(e) => {
               if issues_gen.get_untracked() == generation {
@@ -198,7 +204,13 @@ pub fn RepoDetailPage() -> impl IntoView {
           match fetch_next_page::<models::PullRequest>(&client, url).await {
             Ok((items, pagination)) => {
               rate_limit.update(&client);
-              (items, Pagination { next: pagination.next, last: None })
+              (
+                items,
+                Pagination {
+                  next: pagination.next,
+                  last: None,
+                },
+              )
             }
             Err(e) => {
               if pulls_gen.get_untracked() == generation {
@@ -534,5 +546,3 @@ impl SortKey {
     }
   }
 }
-
-

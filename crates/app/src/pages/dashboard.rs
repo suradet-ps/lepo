@@ -11,7 +11,7 @@ use web_sys::wasm_bindgen::prelude::Closure;
 
 use models::{Issue, PullRequest, Repo, WorkflowRun};
 
-use crate::components::repo_card::{count_label, RepoCard, RepoCardData};
+use crate::components::repo_card::{RepoCard, RepoCardData, count_label};
 use crate::state::{AuthState, RateLimitState, RepoRef, SettingsState, WatchlistState};
 
 /// Which dashboard display mode is active.
@@ -586,17 +586,16 @@ async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
   // counted exactly (PRs filtered out) and later pages are assumed full.
   let (issues_vec, issues_pagination) = issues.unwrap_or_default();
   let issues_page1_non_pr = issues_vec.iter().filter(|i| !i.is_pr()).count();
-  let (total_open_issues, open_issues_estimate) =
-    issues_pagination.total_pages().map_or_else(
-      || (issues_page1_non_pr, false),
-      |pages| {
-        let pages = pages as usize;
-        (
-          pages.saturating_sub(1) * per_page + issues_page1_non_pr,
-          pages > 1,
-        )
-      },
-    );
+  let (total_open_issues, open_issues_estimate) = issues_pagination.total_pages().map_or_else(
+    || (issues_page1_non_pr, false),
+    |pages| {
+      let pages = pages as usize;
+      (
+        pages.saturating_sub(1) * per_page + issues_page1_non_pr,
+        pages > 1,
+      )
+    },
+  );
 
   let (pulls_vec, pulls_pagination) = pulls.unwrap_or_default();
   let pulls_page1_len = pulls_vec.len();
@@ -604,7 +603,10 @@ async fn fetch_bundle(client: &GithubClient, r: &RepoRef) -> RepoBundle {
     || (pulls_page1_len, false),
     |pages| {
       let pages = pages as usize;
-      (pages.saturating_sub(1) * per_page + pulls_page1_len, pages > 1)
+      (
+        pages.saturating_sub(1) * per_page + pulls_page1_len,
+        pages > 1,
+      )
     },
   );
 
