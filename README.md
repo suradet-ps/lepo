@@ -5,7 +5,7 @@
 ![Vercel](https://img.shields.io/badge/Vercel-black?style=flat-square&logo=vercel&logoColor=white)
 
 **Lepo** is a single-page dashboard that monitors the status of multiple GitHub
-repositories at once — open issues, pull requests, CI status, and recent activity — in one
+repositories at once - open issues, pull requests, CI status, and recent activity - in one
 easy-to-read view. Click any item to jump straight to the real issue/PR on github.com.
 
 > **v1 is read-only.** No writes back to GitHub (no creating issues, commenting, or
@@ -34,10 +34,10 @@ easy-to-read view. Click any item to jump straight to the real issue/PR on githu
 
 ## Documentation
 
-- [AGENTS.md](./AGENTS.md) — architecture, data flow, and agent guidelines
-- [DESIGN.md](./DESIGN.md) — UI/UX design system and tokens
-- [CONTRIBUTING.md](./CONTRIBUTING.md) — setup, conventions, and PR guide
-- [SECURITY.md](./SECURITY.md) — vulnerability reporting policy
+- [AGENTS.md](./AGENTS.md) - architecture, data flow, and agent guidelines
+- [DESIGN.md](./DESIGN.md) - UI/UX design system and tokens
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - setup, conventions, and PR guide
+- [SECURITY.md](./SECURITY.md) - vulnerability reporting policy
 
 ## Project Structure
 
@@ -52,7 +52,7 @@ crates/
 
 ### Prerequisites
 
-- [Rust](https://rustup.rs) — stable toolchain (see `rust-toolchain.toml`)
+- [Rust](https://rustup.rs) - stable toolchain (see `rust-toolchain.toml`)
 - `wasm32-unknown-unknown` target:
   ```bash
   rustup target add wasm32-unknown-unknown
@@ -74,7 +74,7 @@ trunk serve --port 3000 --open
 trunk build --release
 ```
 
-Output is in `dist/` — deploy the folder to any static host.
+Output is in `dist/` - deploy the folder to any static host.
 
 ## Scripts
 
@@ -91,10 +91,10 @@ Output is in `dist/` — deploy the folder to any static host.
 
 - **CSP** via `Content-Security-Policy` header in `vercel.json` (allows only
   `https://api.github.com` for fetches)
-- **X-Frame-Options: DENY** — clickjacking protection
-- **X-Content-Type-Options: nosniff** — MIME-sniffing protection
-- **No `unsafe` code** — `unsafe_code` denied at the workspace level
-- **Token stays local** — the GitHub PAT lives only in the browser's `localStorage`; it is
+- **X-Frame-Options: DENY** - clickjacking protection
+- **X-Content-Type-Options: nosniff** - MIME-sniffing protection
+- **No `unsafe` code** - `unsafe_code` denied at the workspace level
+- **Token stays local** - the GitHub PAT lives only in the browser's `localStorage`; it is
   never sent to any server of ours
 
 To report a vulnerability privately, see [SECURITY.md](./SECURITY.md).

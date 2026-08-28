@@ -1,6 +1,6 @@
 # Contributing to Lepo
 
-Thanks for your interest in contributing to **Lepo** — a GitHub repository monitor built
+Thanks for your interest in contributing to **Lepo** - a GitHub repository monitor built
 with Leptos 0.8 (CSR) and Trunk.
 
 This guide covers how to set up your environment, the conventions we follow, and how to
@@ -9,13 +9,13 @@ get your changes merged. For architecture and UI/UX details, read
 
 ## Prerequisites
 
-- [Rust](https://rustup.rs) — the repo pins the `wasm32-unknown-unknown` target via
+- [Rust](https://rustup.rs) - the repo pins the `wasm32-unknown-unknown` target via
   `rust-toolchain.toml`. Use a recent stable toolchain (`rustup update stable`).
 - The `wasm32-unknown-unknown` target:
   ```bash
   rustup target add wasm32-unknown-unknown
   ```
-- [Trunk](https://trunkrs.dev) — the WASM bundler/dev server:
+- [Trunk](https://trunkrs.dev) - the WASM bundler/dev server:
   ```bash
   cargo install trunk
   ```
@@ -43,7 +43,7 @@ cargo clippy --workspace --target wasm32-unknown-unknown -- -D clippy::correctne
 # Check formatting
 cargo fmt --all --check
 
-# Run library unit tests (models / github-api only — no wasm target needed)
+# Run library unit tests (models / github-api only - no wasm target needed)
 cargo test --workspace --exclude app
 
 # Start the dev server with HMR (http://127.0.0.1:3000)
@@ -92,7 +92,7 @@ ci:       add trunk build --release job
 ## Pull requests
 
 1. Fork and create a feature branch off `main` (e.g. `feat/ci-status`).
-2. Keep PRs focused — one logical change per PR.
+2. Keep PRs focused - one logical change per PR.
 3. Ensure local `cargo fmt --check`, `cargo clippy`, and `cargo test` all pass.
 4. Describe what the change does and why; link any related issues.
 5. Add screenshots/GIFs for UI changes where possible.

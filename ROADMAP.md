@@ -1,7 +1,7 @@
 # Lepo Roadmap
 
 Lepo is a Rust/WASM dashboard for monitoring multiple GitHub repositories
-from one view. No backend, no server — static WASM talking directly to
+from one view. No backend, no server - static WASM talking directly to
 `api.github.com`. The token stays in `localStorage`; the data stays yours.
 
 This roadmap is written from what the code actually does today, not from
@@ -23,7 +23,7 @@ button following `rel="next"`.
 
 **Auto-refresh is dead code.** ~~The interval is defined, the settings UI has~~
 ~~a dropdown, the timer dependency is in `Cargo.toml`. But nothing wires them~~
-~~together — the dashboard never re-fetches on its own.~~ ✅ Fixed:
+~~together - the dashboard never re-fetches on its own.~~ ✅ Fixed:
 `RefreshInterval` setting is wired to an actual `setInterval` timer in the
 dashboard. Pauses when rate limit is near exhaustion.
 
@@ -38,7 +38,7 @@ and card views via `last_push_label()`.
 Switching tabs triggers the fetch for that tab.
 
 **Missing filters.** ~~Only state (open/closed/all) is filterable on repo~~
-~~detail. Label, author, and sort are not wired — the data structures support~~
+~~detail. Label, author, and sort are not wired - the data structures support~~
 ~~them, the UI doesn't expose them.~~ ✅ Fixed: label, author (creator),
 sort, and state filters are all wired in the repo detail toolbar.
 
@@ -55,7 +55,7 @@ Red as the only interactive accent. The identity work needs a redo.
 ~~edge cases, and conversions are untested.~~ ✅ Fixed: 48 offline tests now
 cover `map_status`, error display, pagination edge cases, query-string
 encoding, and URL construction. Zero network calls in tests. (No trait mock
-— URL/query logic lives in pure, unit-tested functions; the `GithubApi`
+- URL/query logic lives in pure, unit-tested functions; the `GithubApi`
 trait stays mockable for future integration tests.)
 
 ---
@@ -71,7 +71,7 @@ regardless of how good its design system is.
 Fix the things that make Lepo show wrong information.
 
 - [x] **Paginate the dashboard.** Fetch more than 30 items per repo. Follow
-  the `Link` header for subsequent pages. Cap at a reasonable limit — beyond
+  the `Link` header for subsequent pages. Cap at a reasonable limit - beyond
   a certain count, the number itself ("200+ open issues") is more useful
   than the full list.
 - [x] **Paginate repo detail.** "Load more" button driven by the `Link`
@@ -109,7 +109,7 @@ pagination. No test hits `api.github.com`.
 
 ### 3. Give Lepo its own look
 
-A monitoring dashboard needs to feel dense, fast-scanning, and calm — not
+A monitoring dashboard needs to feel dense, fast-scanning, and calm - not
 like a social media platform.
 
 - [ ] **Rewrite `DESIGN.md`.** ~~Dark-first, information-dense, warm grays,~~
@@ -126,7 +126,7 @@ like a social media platform.
   as favicon and nav logo.
 
 **Acceptance:** ~~DESIGN.md describes Lepo; zero inline hex in CSS (CI
-enforced); both themes render from tokens alone.~~ ❌ Not met — the
+enforced); both themes render from tokens alone.~~ ❌ Not met - the
 dark-first/sky-blue identity was reverted in `294d214`; needs a redo.
 
 ### 4. Responsive and mobile
@@ -134,8 +134,8 @@ dark-first/sky-blue identity was reverted in `294d214`; needs a redo.
 Most developers check dashboards on desktop, but a quick phone check should
 work too.
 
-- [x] **Breakpoint system.** Mobile (<480px), tablet (480–767px),
-  desktop-small (768–1023px), desktop (≥1024px). Documented in DESIGN.md
+- [x] **Breakpoint system.** Mobile (<480px), tablet (480-767px),
+  desktop-small (768-1023px), desktop (≥1024px). Documented in DESIGN.md
   "Layout > Breakpoints", with the pixel values written out at each
   `@media` query in `style.css`.
 - [x] **Table → card fallback.** The dashboard watches
@@ -158,7 +158,7 @@ through repos is friction.
 - [ ] **Navigate lists with keys.** Move through dashboard rows and
   issue/PR lists without a mouse.
 - [ ] **Open items with Enter.** Selected row opens on github.com.
-- [ ] **Quick actions.** Switch tabs, focus search, trigger refresh — all
+- [ ] **Quick actions.** Switch tabs, focus search, trigger refresh - all
   from the keyboard.
 - [ ] **Visible focus ring** on all interactive elements, all themes.
 
@@ -226,7 +226,7 @@ These are real features that belong in a different product:
 
 ## What changes if the user base grows
 
-These aren't phases — they're signals that Lepo is becoming something
+These aren't phases - they're signals that Lepo is becoming something
 bigger, and the architecture should adapt at that point, not before:
 
 - **Multiple accounts / orgs** → the single-token model breaks.

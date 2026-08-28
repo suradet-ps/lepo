@@ -241,7 +241,7 @@ pub fn map_status(
         Err(ApiError::Auth("token rejected or expired".into()))
       } else {
         Err(ApiError::Auth(
-          "forbidden — token may lack required scopes".into(),
+          "forbidden - token may lack required scopes".into(),
         ))
       }
     }

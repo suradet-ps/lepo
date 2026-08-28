@@ -44,7 +44,7 @@ pub fn RateLimitBadge() -> impl IntoView {
               String::new()
             };
             let title = format!(
-              "{} of {} requests left — {}",
+              "{} of {} requests left - {}",
               rl.remaining, rl.limit, reset_label
             );
             (level, format!("{} left", rl.remaining), title)

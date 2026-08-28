@@ -33,7 +33,7 @@ impl RateLimit {
     })
   }
 
-  /// Fraction (0.0–1.0) of the budget remaining.
+  /// Fraction (0.0-1.0) of the budget remaining.
   pub fn fraction_remaining(&self) -> f64 {
     if self.limit == 0 {
       return 0.0;

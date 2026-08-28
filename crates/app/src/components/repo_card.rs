@@ -13,7 +13,7 @@ pub struct RepoCardData {
   pub r#ref: RepoRef,
   /// Fetched repo metadata, if available.
   pub repo: Option<Repo>,
-  /// Raw issues (PRs included) — filtered by the card.
+  /// Raw issues (PRs included) - filtered by the card.
   pub issues: Vec<Issue>,
   /// Pull requests.
   pub pulls: Vec<PullRequest>,
@@ -54,7 +54,7 @@ impl RepoCardData {
       .repo
       .as_ref()
       .and_then(|r| r.pushed_at.as_ref())
-      .map_or_else(|| "—".to_string(), format_relative)
+      .map_or_else(|| "-".to_string(), format_relative)
   }
 
   /// CI status as a (dot-class, label) pair for the badge.
@@ -62,7 +62,7 @@ impl RepoCardData {
     self
       .ci
       .as_ref()
-      .map_or(("ci-dot--none", "—"), |run| match run.status {
+      .map_or(("ci-dot--none", "-"), |run| match run.status {
         WorkflowStatus::Completed => match run.conclusion {
           Some(WorkflowConclusion::Success) => ("ci-dot--pass", "Pass"),
           Some(WorkflowConclusion::Failure) => ("ci-dot--fail", "Fail"),
@@ -76,7 +76,7 @@ impl RepoCardData {
           ("ci-dot--run", "Running")
         }
         WorkflowStatus::Cancelled => ("ci-dot--run", "Cancel"),
-        WorkflowStatus::Other => ("ci-dot--none", "—"),
+        WorkflowStatus::Other => ("ci-dot--none", "-"),
       })
   }
 }

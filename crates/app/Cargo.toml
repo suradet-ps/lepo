@@ -1,6 +1,6 @@
 [package]
 name = "app"
-description = "Lepo GitHub repo monitor — Leptos CSR front-end."
+description = "Lepo GitHub repo monitor - Leptos CSR front-end."
 version.workspace = true
 edition.workspace = true
 license.workspace = true

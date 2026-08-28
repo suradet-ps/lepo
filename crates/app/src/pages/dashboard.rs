@@ -255,7 +255,7 @@ pub fn DashboardPage() -> impl IntoView {
               <div>
                   <h1 class="heading-lg">"Dashboard"</h1>
                   <p class="page-intro">
-                      "Monitor every repository you watch — open issues, pull requests, and CI status at a glance."
+                      "Monitor every repository you watch - open issues, pull requests, and CI status at a glance."
                   </p>
               </div>
               <div class="add-repo">
@@ -301,7 +301,7 @@ pub fn DashboardPage() -> impl IntoView {
               (n > 0).then(|| {
                   view! {
                       <div class="dash-error">
-                          "Couldn't refresh {n} repo(s) — check the token, its scopes, and the rate limit."
+                          "Couldn't refresh {n} repo(s) - check the token, its scopes, and the rate limit."
                       </div>
                   }
               })
@@ -449,7 +449,7 @@ fn repo_table(
                               data.open_prs_estimate,
                           );
                           let issues_title = data.open_issues_estimate.then_some(
-                              "upper bound — includes pull requests and partial pages",
+                              "upper bound - includes pull requests and partial pages",
                           );
                           let stars = data.repo.as_ref().map_or(0, |x| x.stargazers_count);
                           let last_push = data.last_push_label();

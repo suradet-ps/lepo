@@ -7,7 +7,7 @@
   --colors-primary-pressed: #cc001f;
   --colors-primary-muted: rgba(230, 0, 35, 0.08);
 
-  /* Surface — light mode is default */
+  /* Surface - light mode is default */
   --colors-canvas: #ffffff;
   --colors-surface: #fbfbf9;
   --colors-surface-card: #f6f6f3;
@@ -39,7 +39,7 @@
   --colors-warning: #bf8700;
   --colors-focus: #435ee5;
 
-  /* Typography — Inter */
+  /* Typography - Inter */
   --font-sans: "Inter", -apple-system, system-ui, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   --font-mono: "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono",

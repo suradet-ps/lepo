@@ -91,7 +91,7 @@ pub fn RepoDetailPage() -> impl IntoView {
           match fetch_next_page::<Issue>(&client, url).await {
             Ok((mut items, pagination)) => {
               rate_limit.update(&client);
-              // Filter PRs out — GitHub's issues endpoint returns PRs too.
+              // Filter PRs out - GitHub's issues endpoint returns PRs too.
               items.retain(|i: &Issue| !i.is_pr());
               (
                 items,

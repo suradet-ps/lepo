@@ -1,4 +1,4 @@
-# Lepo — GitHub Repo Monitor Dashboard
+# Lepo - GitHub Repo Monitor Dashboard
 
 > Guide for AI agents (Claude, GPT, etc.) working on this project.
 > Read this entire file before writing any code.
@@ -17,7 +17,7 @@ dashboard. Clicking an item jumps straight to the real issue/PR page on github.c
 want an overview without opening github.com for each one individually.
 
 **v1 scope (important)**: **Read-only only.** No feature that writes back to GitHub
-(creating issues, commenting, merging PRs, etc.) in the first version — full stop.
+(creating issues, commenting, merging PRs, etc.) in the first version - full stop.
 Even if the user asks for this later, confirm explicitly before implementing.
 
 ---
@@ -26,7 +26,7 @@ Even if the user asks for this later, confirm explicitly before implementing.
 
 | Layer | Technology |
 |---|---|
-| Framework | Leptos **v0.8**, CSR mode (Client-Side Rendering) only — no SSR, no server |
+| Framework | Leptos **v0.8**, CSR mode (Client-Side Rendering) only - no SSR, no server |
 | Build tool | Trunk |
 | Language | Pure Rust + WASM (no JS/TS in business logic) |
 | HTTP client | `gloo-net` (fetch wrapper for wasm) |
@@ -34,10 +34,10 @@ Even if the user asks for this later, confirm explicitly before implementing.
 | Storage | `gloo-storage` (localStorage wrapper) |
 | Time/format | `chrono` or `time` (pick one, don't mix) |
 | Routing | `leptos_router` (if multiple pages are needed, e.g. Settings, Repo detail) |
-| Error handling | No `unwrap()` / `expect()` outside `#[cfg(test)]` — use `Result` + a project-specific error type |
-| Icons | Pick one pure SVG/Rust icon lib (no CDN JS icon fonts) — specified in DESIGN.md |
+| Error handling | No `unwrap()` / `expect()` outside `#[cfg(test)]` - use `Result` + a project-specific error type |
+| Icons | Pick one pure SVG/Rust icon lib (no CDN JS icon fonts) - specified in DESIGN.md |
 
-**No backend server of our own** — this app is a static site that can be deployed
+**No backend server of our own** - this app is a static site that can be deployed
 anywhere (GitHub Pages, Cloudflare Pages, Netlify) and calls the GitHub REST API
 directly from the browser.
 
@@ -54,13 +54,13 @@ business logic is very light. Forcing a port/adapter for every entity from the
 start would add ceremony without real benefit.
 
 Instead: the `github-api` crate is split out from the `app` crate and wired
-through a **`GithubApi` trait** — so `app` doesn't depend on a concrete
+through a **`GithubApi` trait** - so `app` doesn't depend on a concrete
 implementation directly, making it easy to mock/test, and reusable later for a
-CLI or Tauri app if needed. (If the project grows to need multiple adapters —
-e.g. adding GitLab — refactor up to full hexagonal at that point; don't build it
+CLI or Tauri app if needed. (If the project grows to need multiple adapters -
+e.g. adding GitLab - refactor up to full hexagonal at that point; don't build it
 preemptively.)
 
-### 3.2 Data Flow (mandatory — never skip a layer)
+### 3.2 Data Flow (mandatory - never skip a layer)
 
 ```
 UI (Components/Pages) → State → API (github-api crate)
@@ -80,23 +80,23 @@ UI (Components/Pages) → State → API (github-api crate)
 - **User-triggered mutations/actions** (e.g. clicking refresh, adding/removing a
   repo): use `Action`
 - Avoid calling `spawn_local` directly in a component unless truly necessary
-  (e.g. a side-effect that isn't data fetching) — if used, add a comment
+  (e.g. a side-effect that isn't data fetching) - if used, add a comment
   explaining why.
 
 ### 3.4 State Management
 
 Use Leptos Context (`provide_context` / `expect_context`) as the primary global
-state, split into exactly these pieces — do not create duplicate state:
+state, split into exactly these pieces - do not create duplicate state:
 
-- `AuthState` — token, current user, login status
-- `WatchlistState` — the list of repos being monitored
-- `SettingsState` — refresh interval, theme
-- `RateLimitState` — current remaining/limit/reset (updated automatically every
-  time `GithubClient` receives a response — pages should never check this
+- `AuthState` - token, current user, login status
+- `WatchlistState` - the list of repos being monitored
+- `SettingsState` - refresh interval, theme
+- `RateLimitState` - current remaining/limit/reset (updated automatically every
+  time `GithubClient` receives a response - pages should never check this
   themselves)
 
 Any page/component that needs these values should call
-`expect_context::<XState>()` — never create a duplicate signal locally.
+`expect_context::<XState>()` - never create a duplicate signal locally.
 
 ### 3.5 API Layer Pattern
 
@@ -115,7 +115,7 @@ impl GithubApi for GithubClient { /* ... */ }
 ```
 
 Individual files (`issues.rs`, `pulls.rs`, ...) must not each call `fetch`
-independently — every endpoint is a method on `GithubClient` implementing this
+independently - every endpoint is a method on `GithubClient` implementing this
 trait.
 
 ### 3.6 Pagination
@@ -137,11 +137,11 @@ entry left.
   without any backend to exchange tokens.
 - OAuth App Authorization Code flow **cannot be used** with this architecture,
   since it requires a `client_secret`, which cannot be safely stored in a static
-  site — **do not implement this flow**.
+  site - **do not implement this flow**.
 - OAuth Device Flow is theoretically possible (no client_secret needed for the
   token exchange step), but CORS support on `github.com/login/device/code` and
   `github.com/login/oauth/access_token` for direct browser calls is not
-  guaranteed to be stable — treat this as **Phase 3 (optional/experimental)
+  guaranteed to be stable - treat this as **Phase 3 (optional/experimental)
   only**. Do not make it the primary auth method.
 
 ### v1 UI flow
@@ -183,11 +183,11 @@ entry left.
 Render one card per repo, containing:
 
 - Repo name + star/fork count (optional, lightweight)
-- Open issue count (excluding PRs — the GitHub API returns PRs as issues too,
+- Open issue count (excluding PRs - the GitHub API returns PRs as issues too,
   so filter them out by checking the `pull_request` field in the `/issues`
   response)
 - Open pull request count
-- Latest CI status (from `GET /repos/{owner}/{repo}/actions/runs?per_page=1`) —
+- Latest CI status (from `GET /repos/{owner}/{repo}/actions/runs?per_page=1`) -
   success/failure/in_progress with a colored badge
 - Last commit time on the default branch
 - Clicking the card → navigates to the Repo Detail page (within the app, not
@@ -197,21 +197,21 @@ Render one card per repo, containing:
 ### 5.3 Repo Detail Page
 
 - Issues tab / Pull Requests tab (clearly separated)
-- Paginated list following the `Link` header (see 3.6) — **do not guess/increment
+- Paginated list following the `Link` header (see 3.6) - **do not guess/increment
   the page number manually**
 - Each row shows: title, number (#123), author avatar+name, colored labels,
   last updated date, comment count
 - **Clicking a row → always opens `github.com/{owner}/{repo}/issues/{number}` or
-  `/pull/{number}` in a new tab** (per the original requirement — do not attempt
+  `/pull/{number}` in a new tab** (per the original requirement - do not attempt
   to render the full issue content inside our own app in v1)
 - Filters: state (open/closed/all), label, author
 - Sort: created, updated, comments
 
 ### 5.4 Rate Limit Awareness
 
-- `GithubClient` must automatically update `RateLimitState` (global context —
+- `GithubClient` must automatically update `RateLimitState` (global context -
   see 3.4) every time a response comes back, from the `x-ratelimit-remaining` /
-  `x-ratelimit-reset` headers — **every page reads from this same state; do not
+  `x-ratelimit-reset` headers - **every page reads from this same state; do not
   call `/rate_limit` separately in each page.**
 - Show a small indicator in the top corner of the app (green/yellow/red based
   on remaining %).
@@ -226,11 +226,11 @@ Render one card per repo, containing:
 
 ### 5.6 Settings Page
 
-- Manage the token (view/remove — **never display the full token value**, show
+- Manage the token (view/remove - **never display the full token value**, show
   it masked, e.g. `ghp_****1234`).
 - Manage the watchlist.
 - Configure refresh interval.
-- Configure theme (light/dark) — tied to tokens defined in DESIGN.md.
+- Configure theme (light/dark) - tied to tokens defined in DESIGN.md.
 
 ### Out of scope for v1 (do not implement unless the user explicitly asks)
 
@@ -244,7 +244,7 @@ Render one card per repo, containing:
 
 ## 6. GitHub REST API Endpoints Used
 
-Base URL: `https://api.github.com` — every request must include these headers:
+Base URL: `https://api.github.com` - every request must include these headers:
 ```
 Authorization: Bearer {token}
 Accept: application/vnd.github+json
@@ -262,7 +262,7 @@ X-GitHub-Api-Version: 2022-11-28
 | `GET /rate_limit` | Check current rate limit (call once on startup; after that, rely on headers from every other response to keep `RateLimitState` updated instead) |
 
 > CORS note: all endpoints above are under `api.github.com`, which already
-> supports CORS — no proxy is required.
+> supports CORS - no proxy is required.
 
 ---
 
@@ -273,9 +273,9 @@ github-monitor/
   Cargo.toml               // [workspace] members = ["crates/*"]
   Trunk.toml
   index.html
-  DESIGN.md                // separate file — all CSS/design tokens reference this
+  DESIGN.md                // separate file - all CSS/design tokens reference this
   crates/
-    app/                   // Leptos UI (CSR) — the only crate aware of Trunk/wasm entry
+    app/                   // Leptos UI (CSR) - the only crate aware of Trunk/wasm entry
       Cargo.toml
       src/
         main.rs
@@ -301,7 +301,7 @@ github-monitor/
           login.rs
         error.rs             // AppError for the UI layer
 
-    github-api/             // does not depend on Leptos — reusable for a future CLI/Tauri app
+    github-api/             // does not depend on Leptos - reusable for a future CLI/Tauri app
       Cargo.toml
       src/
         lib.rs
@@ -335,7 +335,7 @@ github-monitor/
 - **Agents must not invent design tokens.** All colors, spacing, fonts,
   breakpoints, and component styles must reference `DESIGN.md` (provided
   separately). If `DESIGN.md` doesn't cover a needed component, ask the user
-  first — do not guess additional styling.
+  first - do not guess additional styling.
 - **No inline styles (`style="..."`) and no hardcoded colors in code.** Only use
   CSS variables declared in `DESIGN.md`.
 
@@ -343,12 +343,12 @@ github-monitor/
 
 ## 9. Error Handling & Code Quality
 
-- No `.unwrap()` / `.expect()` outside tests — use a custom `AppError` (in
+- No `.unwrap()` / `.expect()` outside tests - use a custom `AppError` (in
   `app`) and `ApiError` (in `github-api`) together with `thiserror`.
 - Every API call must have a timeout and show an error state in the UI (no
   silent failures).
 - Retry logic: if a 403 is due to rate limiting (check headers), don't retry
-  immediately — wait until the reset time.
+  immediately - wait until the reset time.
 - Every place that calls the API needs a loading state (skeleton or spinner,
   per DESIGN.md).
 
@@ -364,27 +364,27 @@ github-monitor/
 - `models` crate: write serde tests (deserialize sample JSON from the GitHub
   API against the structs).
 - `github-api` crate: write tests for parsing logic (Link header, rate limit
-  headers) using mocked HTTP responses — no real network calls in unit tests.
+  headers) using mocked HTTP responses - no real network calls in unit tests.
 - **No test may hit `api.github.com` for real** in the CI/unit test suite.
 
 ---
 
 ## 10. Development Phases
 
-**Phase 1 — MVP**
+**Phase 1 - MVP**
 - Set up the workspace (`app`, `github-api`, `models`) + the `GithubApi` trait
 - Token input + validation
 - Add/remove repos in watchlist (stored in localStorage)
 - Dashboard showing cards with issue count and PR count only (no CI status yet)
 
-**Phase 2 — Full Dashboard**
+**Phase 2 - Full Dashboard**
 - Add CI status and last commit to cards
 - Repo Detail page with issue/PR lists + filter/sort + pagination via the Link
   header
 - Clicking a row opens github.com in a new tab
 - Rate limit badge (reading from `RateLimitState`) + auto-refresh
 
-**Phase 3 — Polish / Optional**
+**Phase 3 - Polish / Optional**
 - Full Settings page (theme, interval)
 - OAuth Device Flow (experimental, only if CORS proves reliable in testing)
 - Cross-repo search within the watchlist
@@ -419,7 +419,7 @@ All commands run from the workspace root: the Trunk assets (`index.html`,
   scope only.
 - Before adding a new dependency, verify it actually compiles for
   `wasm32-unknown-unknown` (many crates that depend on a full `tokio` runtime
-  won't work on wasm) — `github-api` and `models` must compile on both native
+  won't work on wasm) - `github-api` and `models` must compile on both native
   (for `cargo test`) and wasm.
 - Do not add features listed under "Out of scope" without asking, even if they
   seem useful.

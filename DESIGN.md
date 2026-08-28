@@ -1,7 +1,7 @@
 # Lepo Design System
 
 Lepo is a monitoring dashboard. It watches many GitHub repositories and surfaces
-the signal — open issues, failing CI, stale PRs — without noise. The design
+the signal - open issues, failing CI, stale PRs - without noise. The design
 system serves that job: dense, scannable, calm.
 
 ## Design Principles
@@ -9,14 +9,14 @@ system serves that job: dense, scannable, calm.
 1. **Warm and readable.** A cream-tinted light palette reduces harsh contrast
    while keeping text crisp. Dark mode uses warm near-blacks for the same feel.
 2. **Information density first.** Every pixel carries data. Tight spacing, small
-   type, tabular numerics. The user scans dozens of repos in seconds — the
+   type, tabular numerics. The user scans dozens of repos in seconds - the
    design must not slow them down.
 3. **One accent for actions.** Pinterest Red (`{colors.primary}`) is the only
    interactive accent. It marks links, active states, and CTAs. Everything else
    is neutral.
 4. **Status colors are semantic, not decorative.** Green = pass. Red = fail or
    error. Amber = in progress or warning. These never appear as background fills
-   or decorative tints — only as dots, text, and thin borders.
+   or decorative tints - only as dots, text, and thin borders.
 5. **No chrome that doesn't earn its space.** No drop shadows on cards. No
    gradients. No decorative borders. Flat surfaces, hairline dividers, and
    spacing do the work.
@@ -25,63 +25,63 @@ system serves that job: dense, scannable, calm.
 
 ### Brand & Accent
 
-- **Primary** (`{colors.primary}` — `#e60023`): Pinterest Red. Links, active
+- **Primary** (`{colors.primary}` - `#e60023`): Pinterest Red. Links, active
   tab indicator, primary button background. The single interactive accent.
-- **Primary Pressed** (`{colors.primary-pressed}` — `#cc001f`): pressed state
+- **Primary Pressed** (`{colors.primary-pressed}` - `#cc001f`): pressed state
   for the primary button.
-- **Primary Muted** (`{colors.primary-muted}` — `rgba(230, 0, 35, 0.08)`):
+- **Primary Muted** (`{colors.primary-muted}` - `rgba(230, 0, 35, 0.08)`):
   tinted background for active chips and hover fills.
 
 ### Surface (Light Mode Default)
 
-- **Canvas** (`{colors.canvas}` — `#ffffff`): true white. Base surface for
+- **Canvas** (`{colors.canvas}` - `#ffffff`): true white. Base surface for
   nav, modals, feature cards, content body.
-- **Surface** (`{colors.surface}` — `#fbfbf9`): faintly cream-tinted
+- **Surface** (`{colors.surface}` - `#fbfbf9`): faintly cream-tinted
   off-white used for the page body wash.
-- **Surface Card** (`{colors.surface-card}` — `#f6f6f3`): warm-cream card and
+- **Surface Card** (`{colors.surface-card}` - `#f6f6f3`): warm-cream card and
   tile background.
-- **Surface Hover** (`{colors.surface-hover}` — `#ededf0`): hover state for
+- **Surface Hover** (`{colors.surface-hover}` - `#ededf0`): hover state for
   interactive surfaces.
-- **Secondary BG** (`{colors.secondary-bg}` — `#e5e5e0`): gray-cream for
+- **Secondary BG** (`{colors.secondary-bg}` - `#e5e5e0`): gray-cream for
   secondary button fill.
-- **Secondary Pressed** (`{colors.secondary-pressed}` — `#c8c8c1`): pressed
+- **Secondary Pressed** (`{colors.secondary-pressed}` - `#c8c8c1`): pressed
   state for secondary button.
-- **Hairline** (`{colors.hairline}` — `#dadad3`): 1px row dividers, card
+- **Hairline** (`{colors.hairline}` - `#dadad3`): 1px row dividers, card
   borders.
-- **Hairline Soft** (`{colors.hairline-soft}` — `#e5e5e0`): lighter inline
+- **Hairline Soft** (`{colors.hairline-soft}` - `#e5e5e0`): lighter inline
   divider.
 
 ### Text
 
-- **Ink** (`{colors.ink}` — `#000000`): primary headlines, button text, nav
+- **Ink** (`{colors.ink}` - `#000000`): primary headlines, button text, nav
   links.
-- **Ink Soft** (`{colors.ink-soft}` — `#211922`): inline-link color in body
+- **Ink Soft** (`{colors.ink-soft}` - `#211922`): inline-link color in body
   prose.
-- **Body** (`{colors.body}` — `#33332e`): default paragraph text.
-- **Charcoal** (`{colors.charcoal}` — `#262622`): softer body where pure ink
+- **Body** (`{colors.body}` - `#33332e`): default paragraph text.
+- **Charcoal** (`{colors.charcoal}` - `#262622`): softer body where pure ink
   is too heavy.
-- **Mute** (`{colors.mute}` — `#62625b`): metadata, timestamps, secondary
+- **Mute** (`{colors.mute}` - `#62625b`): metadata, timestamps, secondary
   captions.
-- **Ash** (`{colors.ash}` — `#91918c`): disabled button text, placeholder
+- **Ash** (`{colors.ash}` - `#91918c`): disabled button text, placeholder
   text.
-- **Stone** (`{colors.stone}` — `#c8c8c1`): least-emphasis utility text.
-- **On Dark** (`{colors.on-dark}` — `#ffffff`): text on dark surfaces.
-- **On Primary** (`{colors.on-primary}` — `#ffffff`): text on primary button.
-- **On Secondary** (`{colors.on-secondary}` — `#000000`): text on secondary
+- **Stone** (`{colors.stone}` - `#c8c8c1`): least-emphasis utility text.
+- **On Dark** (`{colors.on-dark}` - `#ffffff`): text on dark surfaces.
+- **On Primary** (`{colors.on-primary}` - `#ffffff`): text on primary button.
+- **On Secondary** (`{colors.on-secondary}` - `#000000`): text on secondary
   button.
 
 ### Semantic
 
-- **Error** (`{colors.error}` — `#9e0a0a`): validation messages, destructive
+- **Error** (`{colors.error}` - `#9e0a0a`): validation messages, destructive
   actions.
-- **Error Deep** (`{colors.error-deep}` — `#cc001f`): deepened error
+- **Error Deep** (`{colors.error-deep}` - `#cc001f`): deepened error
   background.
-- **Success** (`{colors.success}` — `#1a7f37`): CI passing, positive status.
-- **Success Deep** (`{colors.success-deep}` — `#103c25`): success messaging.
-- **Success Pale** (`{colors.success-pale}` — `#c7f0da`): success pill
+- **Success** (`{colors.success}` - `#1a7f37`): CI passing, positive status.
+- **Success Deep** (`{colors.success-deep}` - `#103c25`): success messaging.
+- **Success Pale** (`{colors.success-pale}` - `#c7f0da`): success pill
   background.
-- **Warning** (`{colors.warning}` — `#bf8700`): in-progress CI, caution.
-- **Focus** (`{colors.focus}` — `#435ee5`): focus ring blue.
+- **Warning** (`{colors.warning}` - `#bf8700`): in-progress CI, caution.
+- **Focus** (`{colors.focus}` - `#435ee5`): focus ring blue.
 
 ### Dark Mode
 
@@ -93,7 +93,7 @@ text. Semantic colors adjust lightness for contrast on dark surfaces.
 
 ### Font Family
 
-**Inter** — a variable geometric sans-serif optimized for screens. Weights 400
+**Inter** - a variable geometric sans-serif optimized for screens. Weights 400
 (regular), 500 (medium), 600 (semibold), 700 (bold). Fallback:
 `-apple-system` → `system-ui` → `Segoe UI` → `Roboto` → `Helvetica Neue` →
 `Arial`.
@@ -120,7 +120,7 @@ text. Semantic colors adjust lightness for contrast on dark surfaces.
   in a column: issue counts, PR counts, star counts, rate-limit remaining.
 - **Tight tracking** on headings (-0.4px to -0.8px) for a dense, confident
   feel.
-- **Generous line-height** on body text (1.4–1.5) for readability.
+- **Generous line-height** on body text (1.4-1.5) for readability.
 
 ## Spacing
 
@@ -158,47 +158,47 @@ surfaces and modals, and full for circular elements.
 
 | Level | Treatment | Use |
 |---|---|---|
-| 0 — Flat | No shadow, hairline border | Default for cards, table wrapper |
-| 1 — Soft shadow | `var(--shadow-sm)` + hairline border | Token form, settings sections |
-| 2 — Modal | `var(--shadow-lg)` + backdrop scrim | Modal dialogs |
+| 0 - Flat | No shadow, hairline border | Default for cards, table wrapper |
+| 1 - Soft shadow | `var(--shadow-sm)` + hairline border | Token form, settings sections |
+| 2 - Modal | `var(--shadow-lg)` + backdrop scrim | Modal dialogs |
 
 ## Components
 
 ### Buttons
 
-**`button-primary`** — background `{colors.primary}`, text
+**`button-primary`** - background `{colors.primary}`, text
 `{colors.on-primary}`, font `{typography.button-md}`, height 40px, rounded
 `{rounded-md}`. For primary CTAs (Add repo, Save token).
 
-**`button-secondary`** — background `{colors.secondary-bg}`, text
+**`button-secondary`** - background `{colors.secondary-bg}`, text
 `{colors.on-secondary}`, height 40px, rounded `{rounded-md}`. For secondary
 actions (Cancel, Load more).
 
-**`button-tertiary`** — transparent background, text `{colors.ink}`, rounded
+**`button-tertiary`** - transparent background, text `{colors.ink}`, rounded
 `{rounded-md}`. For low-emphasis actions.
 
 ### Inputs
 
-**`text-input`** — background `{colors.canvas}`, border 1px
+**`text-input`** - background `{colors.canvas}`, border 1px
 `{colors.ash}`, height 44px, rounded `{rounded-md}`. Focus: border
 `{colors-focus}`, soft blue ring.
 
 ### Cards
 
-**`surface-card`** — background `{colors.surface-card}`, 1px solid
+**`surface-card`** - background `{colors.surface-card}`, 1px solid
 `{colors.hairline}`, rounded `{rounded-md}`, padding `{spacing.md}`. No shadow
 by default.
 
 ### Table
 
-**`data-table`** — full-width, font `{typography.body-sm}`. Header:
+**`data-table`** - full-width, font `{typography.body-sm}`. Header:
 `{typography.caption-md}`, uppercase, 0.4px letter-spacing, bottom border
 `{colors.hairline}`. Rows: 56px, bottom border `{colors.hairline-soft}`, hover
 `{colors.surface}`. Numeric columns: right-aligned, tabular-nums.
 
 ### Filter Chips
 
-**`filter-chip`** — transparent background, text `{colors.ink}`, font
+**`filter-chip`** - transparent background, text `{colors.ink}`, font
 `{typography.button-md}`, rounded `{rounded-full}`. Active: inverted
 (`{colors.ink}` bg, `{colors.on-dark}` text).
 
@@ -208,7 +208,7 @@ by default.
 - Green dot (`{colors.success}`) + "Pass".
 - Red dot (`{colors.error}`) + "Fail".
 - Amber dot (`{colors-warning}`) + "Running".
-- Grey dot (`{colors.ash}`) + "—" for unknown.
+- Grey dot (`{colors.ash}`) + "-" for unknown.
 
 ### Rate Limit Badge
 
@@ -228,11 +228,11 @@ by default.
 
 - **Mobile:** < 480px. Single column, collapsed nav, card view, secondary
   row details hidden.
-- **Tablet:** 480–767px. Compact spacing, dashboard forced to card view.
-- **Desktop-small:** 768–1023px. Full nav and table restored.
+- **Tablet:** 480-767px. Compact spacing, dashboard forced to card view.
+- **Desktop-small:** 768-1023px. Full nav and table restored.
 - **Desktop:** ≥ 1024px. Full experience (content max 1280px).
 
-Media queries use these exact pixel values — CSS custom properties cannot
+Media queries use these exact pixel values - CSS custom properties cannot
 be used inside `@media`, so the values live in `style.css` under
 "Responsive breakpoints" and this section documents them.
 
