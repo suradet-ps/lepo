@@ -1,8 +1,14 @@
-# Lepo
+<p align="center">
+  <img src="favicon.svg" width="128" alt="Lepo icon">
+</p>
 
-![Rust](https://img.shields.io/badge/Rust-2024-000000?style=flat-square&logo=rust&logoColor=white)
-![Leptos](https://img.shields.io/badge/Leptos-0.8-543e7c?style=flat-square&logo=leptos&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-black?style=flat-square&logo=vercel&logoColor=white)
+<h1 align="center">Lepo</h1>
+
+<p align="center">
+  <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-2024-000000?style=flat-square&logo=rust&logoColor=white" alt="Rust"></a>
+  <a href="https://leptos.dev/"><img src="https://img.shields.io/badge/Leptos-0.8-543e7c?style=flat-square&logo=leptos&logoColor=white" alt="Leptos"></a>
+  <a href="https://vercel.com/"><img src="https://img.shields.io/badge/Vercel-black?style=flat-square&logo=vercel&logoColor=white" alt="Vercel"></a>
+</p>
 
 **Lepo** is a single-page dashboard that monitors the status of multiple GitHub
 repositories at once - open issues, pull requests, CI status, and recent activity - in one
@@ -38,15 +44,6 @@ easy-to-read view. Click any item to jump straight to the real issue/PR on githu
 - [DESIGN.md](./docs/DESIGN.md) - UI/UX design system and tokens
 - [CONTRIBUTING.md](./docs/CONTRIBUTING.md) - setup, conventions, and PR guide
 - [SECURITY.md](./docs/SECURITY.md) - vulnerability reporting policy
-
-## Project Structure
-
-```
-crates/
-├── app/            # Leptos CSR UI (the only crate aware of Trunk/wasm)
-├── github-api/     # GitHub REST client (wasm + native, no Leptos)
-└── models/         # Shared serde domain structs
-```
 
 ## Getting Started
 
