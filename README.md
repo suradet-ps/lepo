@@ -35,9 +35,9 @@ easy-to-read view. Click any item to jump straight to the real issue/PR on githu
 ## Documentation
 
 - [AGENTS.md](./AGENTS.md) - architecture, data flow, and agent guidelines
-- [DESIGN.md](./DESIGN.md) - UI/UX design system and tokens
-- [CONTRIBUTING.md](./CONTRIBUTING.md) - setup, conventions, and PR guide
-- [SECURITY.md](./SECURITY.md) - vulnerability reporting policy
+- [DESIGN.md](./docs/DESIGN.md) - UI/UX design system and tokens
+- [CONTRIBUTING.md](./docs/CONTRIBUTING.md) - setup, conventions, and PR guide
+- [SECURITY.md](./docs/SECURITY.md) - vulnerability reporting policy
 
 ## Project Structure
 
@@ -97,7 +97,7 @@ Output is in `dist/` - deploy the folder to any static host.
 - **Token stays local** - the GitHub PAT lives only in the browser's `localStorage`; it is
   never sent to any server of ours
 
-To report a vulnerability privately, see [SECURITY.md](./SECURITY.md).
+To report a vulnerability privately, see [SECURITY.md](./docs/SECURITY.md).
 
 ## Accessibility
 

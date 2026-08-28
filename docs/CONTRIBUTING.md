@@ -5,7 +5,7 @@ with Leptos 0.8 (CSR) and Trunk.
 
 This guide covers how to set up your environment, the conventions we follow, and how to
 get your changes merged. For architecture and UI/UX details, read
-[AGENTS.md](./AGENTS.md) and [DESIGN.md](./DESIGN.md) first.
+[AGENTS.md](../AGENTS.md) and [DESIGN.md](./DESIGN.md) first.
 
 ## Prerequisites
 
@@ -72,7 +72,7 @@ trunk build --release
   `DESIGN.md`. No CSS-in-JS, no UI frameworks. No inline `style=` and no hardcoded colors.
 - **Architecture (data flow):** UI → State → API. Components never call the GitHub API
   directly; they go through state, which talks to `GithubClient` implementing `GithubApi`.
-  See [AGENTS.md](./AGENTS.md) §3.
+  See [AGENTS.md](../AGENTS.md) §3.
 
 ## Commit messages
 
@@ -108,4 +108,4 @@ ci:       add trunk build --release job
 ## License
 
 By contributing, you agree that your contributions will be licensed under the
-[MIT License](./LICENSE).
+[MIT License](../LICENSE).
