@@ -21,6 +21,6 @@ futures.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 # wasm-only: provides TimeoutFuture for the request timeout (http.rs)
-gloo-timers = { version = "0.3", features = ["futures"] }
+gloo-timers = { version = "0.4", features = ["futures"] }
 
 [dev-dependencies]
