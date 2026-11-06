@@ -58,7 +58,7 @@ chrono = { version = "0.4", default-features = false, features = ["serde", "cloc
 # wasm / Leptos UI stack (app crate only)
 leptos = { version = "0.8", features = ["csr"] }
 leptos_router = "0.8"
-gloo-net = { version = "0.6", features = ["http"] }
+gloo-net = { version = "0.7", features = ["http"] }
 gloo-storage = "0.3"
 gloo-timers = { version = "0.3", features = ["futures"] }
 tracing = "0.1"
