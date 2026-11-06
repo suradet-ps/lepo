@@ -60,7 +60,7 @@ leptos = { version = "0.8", features = ["csr"] }
 leptos_router = "0.8"
 gloo-net = { version = "0.6", features = ["http"] }
 gloo-storage = "0.3"
-gloo-timers = { version = "0.3", features = ["futures"] }
+gloo-timers = { version = "0.4", features = ["futures"] }
 tracing = "0.1"
 tracing-wasm = "0.2"
 console_error_panic_hook = "0.1"
